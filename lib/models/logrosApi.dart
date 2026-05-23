@@ -6,7 +6,10 @@ import 'package:indicator/main.dart';
 
 Future<void> getLogros () async {
   final response = await http.get(
-      Uri.parse("${Global.baseUrl}logro")
+      Uri.parse("${Global.baseUrl}logro"),
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      }
   );
 
   if(response.statusCode == 200){
@@ -19,7 +22,10 @@ Future<void> getLogros () async {
 
 Future<void> getLogrosPendientes () async {
   final response = await http.get(
-      Uri.parse("${Global.baseUrl}logro/pendiente")
+      Uri.parse("${Global.baseUrl}logro/pendiente"),
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+      }
   );
 
   if(response.statusCode == 200){
@@ -35,9 +41,9 @@ Future<bool> newLogroApi(String nombre, int puntos, int idIndicador) async {
     final response = await http.post(
       Uri.parse("${Global.baseUrl}logro"),
       headers: {
-        "Content-Type": "application/json", // 2. ESTO ES LO MÁS IMPORTANTE
+        "Content-Type": "application/json",
+        'ngrok-skip-browser-warning': 'true',
       },
-      // 3. Serializa el cuerpo con jsonEncode
       body: jsonEncode({
         "nombre": nombre,
         "puntos": puntos,

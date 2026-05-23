@@ -6,7 +6,10 @@ import 'package:indicator/main.dart';
 
 Future<void> getIndicators () async {
   final response = await http.get(
-      Uri.parse("${Global.baseUrl}indicator")
+      Uri.parse("${Global.baseUrl}indicator"),
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+    }
   );
 
   if(response.statusCode == 200){
