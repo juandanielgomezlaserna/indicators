@@ -27,7 +27,7 @@ class _HomeindicatorState extends State<Homeindicator> {
   Widget build(BuildContext context) {
     return Obx(() => Scaffold(
       appBar: AppBar(
-        title: Text("Indicadores de vida", style: GoogleFonts.poppins(),),
+        title: Text("Indicadores de vida V1.2", style: GoogleFonts.poppins(),),
         foregroundColor: Global.action,
         leading: Icon(Icons.favorite),
         actions: [
