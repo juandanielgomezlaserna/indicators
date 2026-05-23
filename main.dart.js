@@ -83687,7 +83687,7 @@ az(){this.aP()
 A.Gu()},
 K(a){return new A.zd(new A.ake(),null)}}
 A.ake.prototype={
-$0(){var s,r,q,p=null,o=A.dH("Indicadores de vida",p,p,p,A.arm().$0(),p,p),n=$.iJ(),m=A.y3(B.nN,p,p,p),l=t.E,k=A.d([A.K_(!1,A.dA(15),!0,A.y3(B.Ey,p,p,p),p,!0,p,p,p,p,p,p,p,p,new A.aka(),p,p,p,p),A.hM(p,p,10)],l),j=$.qu(),i=A.dA(12)
+$0(){var s,r,q,p=null,o=A.dH("Indicadores de vida V1.2",p,p,p,A.arm().$0(),p,p),n=$.iJ(),m=A.y3(B.nN,p,p,p),l=t.E,k=A.d([A.K_(!1,A.dA(15),!0,A.y3(B.Ey,p,p,p),p,!0,p,p,p,p,p,p,p,p,new A.aka(),p,p,p,p),A.hM(p,p,10)],l),j=$.qu(),i=A.dA(12)
 i=A.d([A.hM(A.as8(new A.cK(B.n6,A.jS(A.d([A.K_(!1,A.dA(15),!0,A.y3(B.nM,$.iJ(),p,50),p,!0,p,p,p,p,p,p,p,p,new A.akb(),p,p,p,p)],l),B.b4,B.u0,B.bX),p),j,4,new A.ch(i,B.o)),160,160)],l)
 j=J.nr($.np().ay.gp(),new A.akc(),t.l7)
 j=A.a1(j,j.$ti.i("al.E"))
