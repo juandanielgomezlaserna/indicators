@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/views/HomeIndicator.dart';
 
@@ -68,6 +69,12 @@ class MyController extends GetxController{
       Get.snackbar("Error", "No se pudo sincronizar el cambio",);
     }
   }
+
+  Future<void> newIndicadorController (nombre, valorString, tipo) async {
+    int valor = int.parse(valorString);
+    await newIndicator(nombre, valor, tipo);
+  }
+
 
   List get Indicators => indicators.value;
   List get Logros => logros.value;

@@ -19,3 +19,25 @@ Future<void> getIndicators () async {
     print("Error al obtener los indicadores: ${response.body}");
   }
 }
+
+Future<void> newIndicator (String nombre, int valor, String tipo) async {
+  final response = await http.post(
+      Uri.parse("${Global.baseUrl}indicator"),
+    headers: {
+      'ngrok-skip-browser-warning': 'true',
+      "Content-Type": "application/json",
+    },
+    body: jsonEncode({
+      "nombre": nombre,
+      "valor": valor,
+      "tipo": tipo
+    }),
+  );
+
+  if(response.statusCode == 201){
+    final result = jsonDecode(response.body);
+    await getIndicators();
+  }else{
+    print("Error al crear el indicador: ${response.body}");
+  }
+}

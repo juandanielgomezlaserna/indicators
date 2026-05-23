@@ -6,6 +6,7 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
+import 'package:indicator/views/newIndicador.dart';
 import 'package:indicator/views/newLogro.dart';
 
 class Homeindicator extends StatefulWidget {
@@ -47,7 +48,34 @@ class _HomeindicatorState extends State<Homeindicator> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Wrap(
-              children: controller.Indicators.map<Widget>((indicator) {
+              children: [
+                SizedBox(
+                width: 160,
+                  height: 160,
+                  child: Card(
+                    color: Global.card, // Aplicamos el fondo oscuro de la tarjeta
+                    elevation: 4,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(12.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center, // Distribuye el espacio eficientemente
+                        children: [
+                          InkWell(
+                            borderRadius: BorderRadius.circular(15),
+                            onTap: (){
+                              newIndicador();
+                            },
+                            child: Icon(Icons.add_circle, color: Global.action, size: 50,),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                ...
+                controller.Indicators.map<Widget>((indicator) {
                   final double rawValue = double.tryParse(indicator['valor']?.toString() ?? '0') ?? 0.0;
                   final double progressValue = (rawValue / 100).clamp(0.0, 1.0);
                   return SizedBox(
@@ -122,6 +150,7 @@ class _HomeindicatorState extends State<Homeindicator> {
                     ),
                   );
                 }).toList(),
+              ]
             ),
             SizedBox(height: 10,),
             Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
