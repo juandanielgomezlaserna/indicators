@@ -26240,7 +26240,7 @@ throw A.i(A.bM("Invalid "+a+' "'+b+'": '+r.gui(),r.gvl(),r.gcA()))}else throw p}
 X0(){var s=0,r=A.N(t.H),q,p,o,n,m
 var $async$X0=A.O(function(a,b){if(a===1)return A.K(b,r)
 for(;;)switch(s){case 0:s=2
-return A.J(A.aBz(A.eT("https://sizing-unmolded-endeared.ngrok-free.dev/api/v1/indicator",0,null)),$async$X0)
+return A.J(A.aBz(A.eT("https://sizing-unmolded-endeared.ngrok-free.app/api/v1/indicator",0,null)),$async$X0)
 case 2:p=b
 o=p.b
 n=p.e
@@ -26252,7 +26252,7 @@ return A.M($async$X0,r)},
 Gl(){var s=0,r=A.N(t.H),q,p,o,n,m
 var $async$Gl=A.O(function(a,b){if(a===1)return A.K(b,r)
 for(;;)switch(s){case 0:s=2
-return A.J(A.aBz(A.eT("https://sizing-unmolded-endeared.ngrok-free.dev/api/v1/logro/pendiente",0,null)),$async$Gl)
+return A.J(A.aBz(A.eT("https://sizing-unmolded-endeared.ngrok-free.app/api/v1/logro/pendiente",0,null)),$async$Gl)
 case 2:p=b
 o=p.b
 n=p.e
@@ -26265,7 +26265,7 @@ ar1(a,b,c){return A.aPZ(a,b,c)},
 aPZ(a,b,c){var s=0,r=A.N(t.y),q,p=2,o=[],n,m,l,k,j,i,h
 var $async$ar1=A.O(function(d,e){if(d===1){o.push(e)
 s=p}for(;;)switch(s){case 0:p=4
-l=A.eT("https://sizing-unmolded-endeared.ngrok-free.dev/api/v1/logro",0,null)
+l=A.eT("https://sizing-unmolded-endeared.ngrok-free.app/api/v1/logro",0,null)
 k=t.N
 j=A.ao(["Content-Type","application/json"],k,k)
 s=7
@@ -26300,7 +26300,7 @@ var $async$arf=A.O(function(b,c){if(b===1){o.push(c)
 s=p}for(;;)switch(s){case 0:p=4
 l=t.N
 s=7
-return A.J(A.aQ4(A.eT("https://sizing-unmolded-endeared.ngrok-free.dev/api/v1/logro/check/"+a,0,null),A.ao(["Content-Type","application/json"],l,l)),$async$arf)
+return A.J(A.aQ4(A.eT("https://sizing-unmolded-endeared.ngrok-free.app/api/v1/logro/check/"+a,0,null),A.ao(["Content-Type","application/json"],l,l)),$async$arf)
 case 7:n=c
 l=n.b
 q=l===200
