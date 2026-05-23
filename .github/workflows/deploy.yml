@@ -27,7 +27,7 @@ jobs:
 
       # 4. ⚡ El comando crítico: Compila la versión web
       - name: Compilar Web
-        run: flutter build web
+        run: flutter build web --base-href /indicators/
 
       # 5. Sube la carpeta compilada a GitHub Pages
       - name: Desplegar en GitHub Pages
