@@ -5,11 +5,13 @@ import 'package:get/get.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/views/HomeIndicator.dart';
+import 'package:indicator/views/selectUser.dart';
 
 class MyController extends GetxController{
   Timer? timer;
   final indicators = [].obs;
   final logros = [].obs;
+  final user = "".obs;
 
   void setSplash (){
     timer?.cancel();
@@ -18,7 +20,8 @@ class MyController extends GetxController{
       if(seconds > 0){
         seconds--;
       }else{
-        Get.off(() => Homeindicator());
+        Get.off(() => Selectuser());
+        timer.cancel();
       }
     });
   }
@@ -29,6 +32,10 @@ class MyController extends GetxController{
 
   void setLogros (List item) {
     logros.value = item;
+  }
+
+  void setUser (String item) {
+    user.value = item;
   }
 
   Future<void> newLogroController(String name, String puntosString, int idIndicador) async {
@@ -78,6 +85,7 @@ class MyController extends GetxController{
 
   List get Indicators => indicators.value;
   List get Logros => logros.value;
+  String get User => user.value;
 
   @override
   void onInit() {

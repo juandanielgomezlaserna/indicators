@@ -25,6 +25,7 @@ Future<void> getLogrosPendientes () async {
       Uri.parse("${Global.baseUrl}logro/pendiente"),
       headers: {
         'ngrok-skip-browser-warning': 'true',
+        "usuario" : controller.User
       }
   );
 

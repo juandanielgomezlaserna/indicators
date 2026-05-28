@@ -42,13 +42,13 @@ void newLogro(int idIndicator) {
 
               // --- Campos de Texto ---
               TextFormField(
-                decoration: Wapp.globalInput(hint: "Nombre", label: "Nombre del logro"),
+                decoration: Wapp.globalInput(hint: "Nombre", label: "Nombre del indicador"),
                 controller: nombreController,
                 style: TextStyle(color: Global.text),
               ),
               const SizedBox(height: 15),
               TextFormField(
-                decoration: Wapp.globalInput(hint: "Puntos", label: "Puntos que suma el indicador"),
+                decoration: Wapp.globalInput(hint: "Puntos", label: "Puntos iniciales del indicador"),
                 controller: puntosController,
                 style: TextStyle(color: Global.text),
                 keyboardType: TextInputType.number, // Teclado numérico para mayor velocidad del usuario

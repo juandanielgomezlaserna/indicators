@@ -9,6 +9,7 @@ Future<void> getIndicators () async {
       Uri.parse("${Global.baseUrl}indicator"),
     headers: {
       'ngrok-skip-browser-warning': 'true',
+      "usuario" : controller.User
     }
   );
 
@@ -30,7 +31,8 @@ Future<void> newIndicator (String nombre, int valor, String tipo) async {
     body: jsonEncode({
       "nombre": nombre,
       "valor": valor,
-      "tipo": tipo
+      "tipo": tipo,
+      "usuario" : controller.User
     }),
   );
 

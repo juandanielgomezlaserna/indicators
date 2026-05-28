@@ -22,6 +22,7 @@ class _HomeindicatorState extends State<Homeindicator> {
     // TODO: implement initState
     super.initState();
     getIndicators();
+    getLogrosPendientes();
   }
   @override
   Widget build(BuildContext context) {
@@ -54,7 +55,7 @@ class _HomeindicatorState extends State<Homeindicator> {
                   width: 160,
                     height: 160,
                     child: Card(
-                      color: Global.card, // Aplicamos el fondo oscuro de la tarjeta
+                      color: Global.card,
                       elevation: 4,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       child: Padding(
@@ -83,22 +84,21 @@ class _HomeindicatorState extends State<Homeindicator> {
                       width: 160,
                       height: 160,
                       child: Card(
-                        color: Global.card, // Aplicamos el fondo oscuro de la tarjeta
+                        color: Global.card,
                         elevation: 4,
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                         child: Padding(
                           padding: const EdgeInsets.all(12.0),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribuye el espacio eficientemente
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              // Tipo de indicador (Etiqueta superior pequeña)
                               Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
                                     (indicator['tipo'] ?? 'General').toString().toUpperCase(),
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.sutil), // Color sutil para la categoría
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.sutil),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
@@ -112,7 +112,6 @@ class _HomeindicatorState extends State<Homeindicator> {
                                 ],
                               ),
           
-                              // Nombre del indicador (Cuerpo central)
                               Expanded(
                                 child: Center(
                                   child: Text(
@@ -125,22 +124,21 @@ class _HomeindicatorState extends State<Homeindicator> {
                                 ),
                               ),
           
-                              // Sección de progreso y valor numérico
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.end,
                                 children: [
                                   Text(
                                     '${rawValue.toInt()}%',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Global.action), // Color de acción para el valor
+                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Global.action),
                                   ),
                                   const SizedBox(height: 4),
                                   ClipRRect(
                                     borderRadius: BorderRadius.circular(4),
                                     child: LinearProgressIndicator(
                                       value: progressValue,
-                                      backgroundColor: Global.bg, // Fondo de la barra usando el background global
-                                      valueColor: AlwaysStoppedAnimation<Color>(Global.action), // Color de progreso llamativo
-                                      minHeight: 8, // Más visible en el emulador
+                                      backgroundColor: Global.bg,
+                                      valueColor: AlwaysStoppedAnimation<Color>(Global.action),
+                                      minHeight: 8,
                                     ),
                                   ),
                                 ],
@@ -157,36 +155,36 @@ class _HomeindicatorState extends State<Homeindicator> {
               Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
               SizedBox(height: 10,),
               ListView.builder(
-                shrinkWrap: true, // ⚡ Mínimo espacio posible
+                shrinkWrap: true,
                 physics: const ClampingScrollPhysics(),
                 itemCount: controller.Logros.length,
                 itemBuilder: (context, i) {
                   final logro = controller.Logros[i];
           
-                  // ⚡ Condicional de estado: ¿Está completado?
                   bool completado = logro["completado"] ?? false;
           
                   return Card(
                     color: Global.card,
                     child: ListTile(
                       title: Text(
-                        logro["nombre"],
+                        "${logro["nombre"]} (${logro["puntos"]}pts)",
                         style: TextStyle(
-                          // ⚡ La magia del tachado
                           decoration: completado
                               ? TextDecoration.lineThrough
                               : TextDecoration.none,
-                          // Opcional: darle un tono gris si está tachado para mejor UX
                           color: Global.text,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                      subtitle: Text("${logro["nombre_indicador"]}", style: TextStyle(color: Global.text.withOpacity(0.8)),),
                       trailing: Checkbox(
                         value: completado,
+                        checkColor: Global.action,
+                        focusColor: Global.action,
                         onChanged: (value) async {
-                          // ⚡ Lógica reactiva: actualiza tu controller aquí
                           controller.toggleLogro(logro["id"]);
                         },
+                        side: BorderSide(color: Global.sutil, width: 2.0),
                       ),
                     ),
                   );
