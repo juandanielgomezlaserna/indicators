@@ -12,6 +12,7 @@ class MyController extends GetxController{
   final indicators = [].obs;
   final logros = [].obs;
   final user = "".obs;
+  final indicator = {}.obs;
 
   void setSplash (){
     timer?.cancel();
@@ -36,6 +37,10 @@ class MyController extends GetxController{
 
   void setUser (String item) {
     user.value = item;
+  }
+
+  void setIndicator (Map item) {
+    indicator.value = item;
   }
 
   Future<void> newLogroController(String name, String puntosString, int idIndicador) async {
@@ -86,6 +91,7 @@ class MyController extends GetxController{
   List get Indicators => indicators.value;
   List get Logros => logros.value;
   String get User => user.value;
+  Map get Indicator => indicator.value;
 
   @override
   void onInit() {

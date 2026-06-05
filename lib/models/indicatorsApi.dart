@@ -43,3 +43,22 @@ Future<void> newIndicator (String nombre, int valor, String tipo) async {
     print("Error al crear el indicador: ${response.body}");
   }
 }
+
+Future<void> getIndicatorById(int id) async {
+  final response = await http.get(
+      Uri.parse("${Global.baseUrl}indicator/$id"), // Pasamos el ID por la URL
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        "usuario": controller.User
+      }
+  );
+
+  if (response.statusCode == 200) {
+    final result = jsonDecode(response.body);
+
+    // Le pasamos el mapa completo de "data" a tu controlador (que incluye indicador y logros)
+    controller.setIndicator(result["data"]);
+  } else {
+    print("Error al obtener el indicador detallado: ${response.body}");
+  }
+}

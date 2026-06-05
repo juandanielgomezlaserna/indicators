@@ -6,6 +6,7 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
+import 'package:indicator/views/ViewLogrosIndicator.dart';
 import 'package:indicator/views/newIndicador.dart';
 import 'package:indicator/views/newLogro.dart';
 
@@ -80,70 +81,78 @@ class _HomeindicatorState extends State<Homeindicator> {
                   controller.Indicators.map<Widget>((indicator) {
                     final double rawValue = double.tryParse(indicator['valor']?.toString() ?? '0') ?? 0.0;
                     final double progressValue = (rawValue / 100).clamp(0.0, 1.0);
-                    return SizedBox(
-                      width: 160,
-                      height: 160,
-                      child: Card(
-                        color: Global.card,
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    (indicator['tipo'] ?? 'General').toString().toUpperCase(),
-                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.sutil),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  InkWell(
-                                    borderRadius: BorderRadius.circular(15),
-                                    onTap: (){
-                                      newLogro(indicator["id"]);
-                                    },
-                                    child: Icon(Icons.add_circle, color: Global.action,),
-                                  )
-                                ],
-                              ),
-          
-                              Expanded(
-                                child: Center(
-                                  child: Text(
-                                    indicator['nombre'] ?? 'Sin Nombre',
-                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Global.text), // Texto principal claro
-                                    textAlign: TextAlign.center,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(15),
+                      onTap: () async {
+                        await getIndicatorById(indicator["id"]);
+                        print(controller.Indicator);
+                        Get.to(() => Viewlogrosindicator());
+                      },
+                      child: SizedBox(
+                        width: 160,
+                        height: 160,
+                        child: Card(
+                          color: Global.card,
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      (indicator['tipo'] ?? 'General').toString().toUpperCase(),
+                                      style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.sutil),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    InkWell(
+                                      borderRadius: BorderRadius.circular(15),
+                                      onTap: (){
+                                        newLogro(indicator["id"]);
+                                      },
+                                      child: Icon(Icons.add_circle, color: Global.action,),
+                                    )
+                                  ],
                                 ),
-                              ),
-          
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.end,
-                                children: [
-                                  Text(
-                                    '${rawValue.toInt()}%',
-                                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Global.action),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(4),
-                                    child: LinearProgressIndicator(
-                                      value: progressValue,
-                                      backgroundColor: Global.bg,
-                                      valueColor: AlwaysStoppedAnimation<Color>(Global.action),
-                                      minHeight: 8,
+
+                                Expanded(
+                                  child: Center(
+                                    child: Text(
+                                      indicator['nombre'] ?? 'Sin Nombre',
+                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Global.text), // Texto principal claro
+                                      textAlign: TextAlign.center,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ),
-                                ],
-                              )
-                            ],
+                                ),
+
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: [
+                                    Text(
+                                      '${rawValue.toInt()}%',
+                                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Global.action),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(4),
+                                      child: LinearProgressIndicator(
+                                        value: progressValue,
+                                        backgroundColor: Global.bg,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Global.action),
+                                        minHeight: 8,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              ],
+                            ),
                           ),
                         ),
                       ),
