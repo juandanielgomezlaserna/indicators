@@ -37,6 +37,24 @@ Future<void> getLogrosPendientes () async {
   }
 }
 
+Future<List> getLogrosSemanas () async {
+  final response = await http.get(
+      Uri.parse("${Global.baseUrl}logro/weeks"),
+      headers: {
+        'ngrok-skip-browser-warning': 'true',
+        "usuario" : controller.User
+      }
+  );
+
+  if(response.statusCode == 200){
+    final result = jsonDecode(response.body);
+    return result["data"];
+  }else{
+    print("Error al obtener los logros: ${response.body}");
+    return [];
+  }
+}
+
 Future<bool> newLogroApi(String nombre, int puntos, int idIndicador) async {
   try {
     final response = await http.post(

@@ -9,6 +9,7 @@ import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/views/ViewLogrosIndicator.dart';
 import 'package:indicator/views/newIndicador.dart';
 import 'package:indicator/views/newLogro.dart';
+import 'package:indicator/views/viewLogrosWeeks.dart';
 
 class Homeindicator extends StatefulWidget {
   const Homeindicator({super.key});
@@ -161,7 +162,21 @@ class _HomeindicatorState extends State<Homeindicator> {
                 ]
               ),
               SizedBox(height: 10,),
-              Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
+                  InkWell(
+                    onTap: () async {
+                      final logrosWeeks = await getLogrosSemanas();
+                      controller.setLogrosWeeks(logrosWeeks);
+                      viewLogrosWeeks(context);
+                    },
+                    borderRadius: BorderRadius.circular(15),
+                    child: Icon(Icons.navigate_next, color: Global.text,),
+                  )
+                ],
+              ),
               SizedBox(height: 10,),
               ListView.builder(
                 shrinkWrap: true,

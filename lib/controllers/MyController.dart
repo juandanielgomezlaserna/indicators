@@ -11,6 +11,7 @@ class MyController extends GetxController{
   Timer? timer;
   final indicators = [].obs;
   final logros = [].obs;
+  final logrosWeeks = [].obs;
   final user = "".obs;
   final indicator = {}.obs;
 
@@ -33,6 +34,10 @@ class MyController extends GetxController{
 
   void setLogros (List item) {
     logros.value = item;
+  }
+
+  void setLogrosWeeks (List item) {
+    logrosWeeks.value = item;
   }
 
   void setUser (String item) {
@@ -90,6 +95,7 @@ class MyController extends GetxController{
 
   List get Indicators => indicators.value;
   List get Logros => logros.value;
+  List get LogrosWeeks => logrosWeeks.value;
   String get User => user.value;
   Map get Indicator => indicator.value;
 
