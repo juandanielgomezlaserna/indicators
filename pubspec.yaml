@@ -39,6 +39,7 @@ dependencies:
   get: ^4.7.3
   animate_do: ^5.1.0
   google_fonts: ^8.1.0
+  flutter_launcher_icons: ^0.14.4
 
 dev_dependencies:
   flutter_test:
@@ -61,6 +62,16 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+  assets:
+    - lib/assets/logo.png
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "lib/assets/logo.png"
+  image_path_android: "lib/assets/logo.png"
+  image_path_ios: "lib/assets/logo.png"
+  adaptive_icon_background: "#121214"
+  adaptive_icon_foreground: "lib/assets/logo.png"
 
   # To add assets to your application, add an assets section, like this:
   # assets:
