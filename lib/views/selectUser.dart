@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
-import 'package:indicator/views/HomeIndicator.dart';
+import 'package:indicator/views/HomePrincipal.dart';
+import 'package:indicator/views/HomePrincipal.dart';
+import 'package:indicator/views/indicator/HomeIndicator.dart';
 
 class Selectuser extends StatelessWidget {
   const Selectuser({super.key});
@@ -25,7 +27,7 @@ class Selectuser extends StatelessWidget {
             _buildUserButton(context, "Jota", () {
               // TODO: Lógica para Jota
               controller.setUser("Jota");
-              Get.to(() => Homeindicator());
+              Get.to(() => Homeprincipal());
             }),
 
             const SizedBox(height: 20),
@@ -34,7 +36,7 @@ class Selectuser extends StatelessWidget {
             _buildUserButton(context, "Da", () {
               // TODO: Lógica para Da
               controller.setUser("Da");
-              Get.to(() => Homeindicator());
+              Get.to(() => Homeprincipal());
             }),
           ],
         ),

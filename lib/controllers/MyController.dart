@@ -4,16 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
-import 'package:indicator/views/HomeIndicator.dart';
+import 'package:indicator/views/indicator/HomeIndicator.dart';
 import 'package:indicator/views/selectUser.dart';
+import 'package:indicator/views/wish/HomeWish.dart';
 
 class MyController extends GetxController{
   Timer? timer;
   final indicators = [].obs;
+  final indicatorsWishes = [].obs;
   final logros = [].obs;
   final logrosWeeks = [].obs;
   final user = "".obs;
   final indicator = {}.obs;
+  final page = "".obs;
+  final pages = {
+    "indicator" : Homeindicator(),
+    "wish" : Homewish(),
+  }.obs;
 
   void setSplash (){
     timer?.cancel();
@@ -26,6 +33,10 @@ class MyController extends GetxController{
         timer.cancel();
       }
     });
+  }
+
+  void setPage (String item){
+    page.value = item;
   }
 
   void setIndicators (List item) {
@@ -46,6 +57,10 @@ class MyController extends GetxController{
 
   void setIndicator (Map item) {
     indicator.value = item;
+  }
+
+  void setIndicatorsWishes (List item) {
+    indicatorsWishes.value = item;
   }
 
   Future<void> newLogroController(String name, String puntosString, int idIndicador) async {
@@ -98,11 +113,15 @@ class MyController extends GetxController{
   List get LogrosWeeks => logrosWeeks.value;
   String get User => user.value;
   Map get Indicator => indicator.value;
+  Map get Pages => pages.value;
+  String get Page => page.value;
+  List get IndicatorsWishes => indicatorsWishes.value;
 
   @override
   void onInit() {
     // TODO: implement onInit
     super.onInit();
     setSplash();
+    setPage("indicator");
   }
 }

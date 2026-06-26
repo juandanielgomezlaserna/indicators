@@ -6,10 +6,10 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
-import 'package:indicator/views/ViewLogrosIndicator.dart';
-import 'package:indicator/views/newIndicador.dart';
-import 'package:indicator/views/newLogro.dart';
-import 'package:indicator/views/viewLogrosWeeks.dart';
+import 'package:indicator/views/indicator/ViewLogrosIndicator.dart';
+import 'package:indicator/views/indicator/newIndicador.dart';
+import 'package:indicator/views/indicator/newLogro.dart';
+import 'package:indicator/views/indicator/viewLogrosWeeks.dart';
 
 class Homeindicator extends StatefulWidget {
   const Homeindicator({super.key});
@@ -28,33 +28,16 @@ class _HomeindicatorState extends State<Homeindicator> {
   }
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Scaffold(
-      appBar: AppBar(
-        title: Text("Indicadores de vida V1.3", style: GoogleFonts.poppins(),),
-        foregroundColor: Global.action,
-        leading: Icon(Icons.favorite),
-        actions: [
-          InkWell(
-            borderRadius: BorderRadius.circular(15),
-            onTap: () async {
-              await getIndicators();
-              await getLogrosPendientes();
-            },
-            child: Icon(CupertinoIcons.refresh),
-          ),
-          SizedBox(width: 10,),
-        ],
-      ),
-      body: Padding(
-        padding: EdgeInsets.all(20),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Wrap(
+    return Obx(() => Padding(
+      padding: EdgeInsets.all(20),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Wrap(
                 children: [
                   SizedBox(
-                  width: 160,
+                    width: 160,
                     height: 160,
                     child: Card(
                       color: Global.card,
@@ -160,62 +143,61 @@ class _HomeindicatorState extends State<Homeindicator> {
                     );
                   }).toList(),
                 ]
-              ),
-              SizedBox(height: 10,),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
-                  InkWell(
-                    onTap: () async {
-                      final logrosWeeks = await getLogrosSemanas();
-                      controller.setLogrosWeeks(logrosWeeks);
-                      viewLogrosWeeks(context);
-                    },
-                    borderRadius: BorderRadius.circular(15),
-                    child: Icon(Icons.navigate_next, color: Global.text,),
-                  )
-                ],
-              ),
-              SizedBox(height: 10,),
-              ListView.builder(
-                shrinkWrap: true,
-                physics: const ClampingScrollPhysics(),
-                itemCount: controller.Logros.length,
-                itemBuilder: (context, i) {
-                  final logro = controller.Logros[i];
-          
-                  bool completado = logro["completado"] ?? false;
-          
-                  return Card(
-                    color: Global.card,
-                    child: ListTile(
-                      title: Text(
-                        "${logro["nombre"]} (${logro["puntos"]}pts)",
-                        style: TextStyle(
-                          decoration: completado
-                              ? TextDecoration.lineThrough
-                              : TextDecoration.none,
-                          color: Global.text,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Text("${logro["nombre_indicador"]}", style: TextStyle(color: Global.text.withOpacity(0.8)),),
-                      trailing: Checkbox(
-                        value: completado,
-                        checkColor: Global.action,
-                        focusColor: Global.action,
-                        onChanged: (value) async {
-                          controller.toggleLogro(logro["id"]);
-                        },
-                        side: BorderSide(color: Global.sutil, width: 2.0),
+            ),
+            SizedBox(height: 10,),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Logros", style: GoogleFonts.poppins(color: Global.text, fontSize: 18),),
+                InkWell(
+                  onTap: () async {
+                    final logrosWeeks = await getLogrosSemanas();
+                    controller.setLogrosWeeks(logrosWeeks);
+                    viewLogrosWeeks(context);
+                  },
+                  borderRadius: BorderRadius.circular(15),
+                  child: Icon(Icons.navigate_next, color: Global.text,),
+                )
+              ],
+            ),
+            SizedBox(height: 10,),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemCount: controller.Logros.length,
+              itemBuilder: (context, i) {
+                final logro = controller.Logros[i];
+
+                bool completado = logro["completado"] ?? false;
+
+                return Card(
+                  color: Global.card,
+                  child: ListTile(
+                    title: Text(
+                      "${logro["nombre"]} (${logro["puntos"]}pts)",
+                      style: TextStyle(
+                        decoration: completado
+                            ? TextDecoration.lineThrough
+                            : TextDecoration.none,
+                        color: Global.text,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-              )
-            ],
-          ),
+                    subtitle: Text("${logro["nombre_indicador"]}", style: TextStyle(color: Global.text.withOpacity(0.8)),),
+                    trailing: Checkbox(
+                      value: completado,
+                      checkColor: Global.action,
+                      focusColor: Global.action,
+                      onChanged: (value) async {
+                        controller.toggleLogro(logro["id"]);
+                      },
+                      side: BorderSide(color: Global.sutil, width: 2.0),
+                    ),
+                  ),
+                );
+              },
+            )
+          ],
         ),
       ),
     ));
