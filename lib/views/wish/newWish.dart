@@ -6,10 +6,9 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/utils/widgetsApp.dart';
 
-void newLogro(int idIndicator) {
+void newWish(int idIndicator) {
   final formKey = GlobalKey<FormState>();
   final nombreController = TextEditingController();
-  final puntosController = TextEditingController();
   Get.dialog(
     Dialog(
       backgroundColor: Global.card, // Fondo oscuro para mantener tu estética
@@ -19,7 +18,6 @@ void newLogro(int idIndicator) {
         child: Form(
           key: formKey,
           child: Column(
-            // ¡CRÍTICO PARA MODALES! Evita que el Column explote la pantalla
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -33,7 +31,7 @@ void newLogro(int idIndicator) {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    "Nuevo logro",
+                    "Nuevo deseo",
                     style: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ],
@@ -42,19 +40,11 @@ void newLogro(int idIndicator) {
 
               // --- Campos de Texto ---
               TextFormField(
-                decoration: Wapp.globalInput(hint: "Nombre", label: "Nombre del logro"),
+                decoration: Wapp.globalInput(hint: "Nombre", label: "Nombre del deseo"),
                 controller: nombreController,
                 style: TextStyle(color: Global.text),
               ),
               const SizedBox(height: 15),
-              TextFormField(
-                decoration: Wapp.globalInput(hint: "Puntos", label: "Puntos iniciales del indicador"),
-                controller: puntosController,
-                style: TextStyle(color: Global.text),
-                keyboardType: TextInputType.number, // Teclado numérico para mayor velocidad del usuario
-              ),
-              const SizedBox(height: 25),
-
               // --- Botón de Acción ---
               SizedBox(
                 width: double.infinity,
@@ -65,10 +55,10 @@ void newLogro(int idIndicator) {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () async {
-                    await controller.newLogroController(nombreController.text, puntosController.text, idIndicator);
+                    controller.newWishController(nombreController.text, controller.Indicator["indicator"]["id"]);
                   },
                   child: Text(
-                    "Guardar Logro",
+                    "Guardar Deseo",
                     style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
                   ),
                 ),

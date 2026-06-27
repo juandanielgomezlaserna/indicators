@@ -1,8 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/wishApi.dart';
+import 'package:indicator/views/wish/ViewWishesByindicator.dart';
 
 class Homewish extends StatefulWidget {
   const Homewish({super.key});
@@ -21,7 +23,7 @@ class _HomewishState extends State<Homewish> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Obx(() => Padding(
       padding: const EdgeInsets.all(20),
       child: SingleChildScrollView(
         child: Column(
@@ -52,9 +54,9 @@ class _HomewishState extends State<Homewish> {
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(12),
                         child: InkWell(
-                          onTap: () {
-                            // Por ahora dejamos el evento listo para cuando necesites navegar o disparar otra función
-                            print("Diste click al indicador: $nombre con ID: ${indicator['id']}");
+                          onTap: () async {
+                            await getWishesByIndicator(indicator["id"]);
+                            Get.to(() => Viewwishesbyindicator());
                           },
                           child: Padding(
                             padding: const EdgeInsets.all(12.0),
@@ -76,9 +78,9 @@ class _HomewishState extends State<Homewish> {
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                    color: Global.text
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                      color: Global.text
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -110,6 +112,6 @@ class _HomewishState extends State<Homewish> {
           ],
         ),
       ),
-    );
+    ));
   }
 }
