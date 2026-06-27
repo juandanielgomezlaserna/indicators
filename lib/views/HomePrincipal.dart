@@ -37,25 +37,27 @@ class _HomeprincipalState extends State<Homeprincipal> {
         ],
       ),
       body: controller.Pages[controller.Page],
-      bottomNavigationBar: Container(
-        height: 75,
-        color: Global.card,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
-            IconButton(
-                onPressed: (){
-                  controller.setPage("indicator");
-                },
-                icon: Icon(Icons.favorite, size: 50,)
-            ),
-            IconButton(
-                onPressed: (){
-                  controller.setPage("wish");
-                },
-                icon: Icon(CupertinoIcons.book_fill, size: 50,)
-            ),
-          ],
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 75,
+          color: Global.card,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              IconButton(
+                  onPressed: (){
+                    controller.setPage("indicator");
+                  },
+                  icon: Icon(Icons.favorite, size: 50,)
+              ),
+              IconButton(
+                  onPressed: (){
+                    controller.setPage("wish");
+                  },
+                  icon: Icon(CupertinoIcons.book_fill, size: 50,)
+              ),
+            ],
+          ),
         ),
       ),
     ));
