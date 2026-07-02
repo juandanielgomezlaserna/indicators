@@ -74,7 +74,7 @@ class _ViewwishesbyindicatorState extends State<Viewwishesbyindicator> {
                         color: Global.text,
                       ),
                       onTap: () {
-                        newLogroByWish(controller.Indicator["indicator"]["id"], nombreDeseo);
+                        newLogroByWish(controller.Indicator["indicator"]["id"], nombreDeseo, wish["id"]);
                       },
                     ),
                   );

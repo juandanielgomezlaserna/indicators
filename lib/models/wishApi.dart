@@ -66,3 +66,27 @@ Future<bool> newWishApi (int idIndicator, String name) async {
     return false;
   }
 }
+
+Future<bool> deleteWishApi (int idWish) async {
+  try {
+    final response = await http.delete(
+      // ✅ CORREGIDO: Pasamos el ID directamente en la URL como espera req.params
+      Uri.parse("${Global.baseUrl}wish/$idWish"),
+      headers: {
+        "Content-Type": "application/json",
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    // ✅ CORREGIDO: El backend responde con un 200 OK al eliminar correctamente
+    if (response.statusCode == 200) {
+      return true;
+    } else {
+      print("Error de API: ${response.statusCode} - ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    print("Excepción atrapada: $e");
+    return false;
+  }
+}

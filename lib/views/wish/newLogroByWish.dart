@@ -4,9 +4,10 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
+import 'package:indicator/models/wishApi.dart';
 import 'package:indicator/utils/widgetsApp.dart';
 
-void newLogroByWish (int idIndicator, String name) {
+void newLogroByWish (int idIndicator, String name, int idWish) {
   final formKey = GlobalKey<FormState>();
   final nombreController = TextEditingController(text: name);
   final puntosController = TextEditingController();
@@ -66,6 +67,7 @@ void newLogroByWish (int idIndicator, String name) {
                   ),
                   onPressed: () async {
                     await controller.newLogroController(nombreController.text, puntosController.text, idIndicator);
+                    await deleteWishApi(idWish);
                   },
                   child: Text(
                     "Guardar Logro",
