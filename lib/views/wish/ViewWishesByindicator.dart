@@ -5,6 +5,7 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/wishApi.dart';
 import 'package:indicator/views/indicator/newLogro.dart';
+import 'package:indicator/views/wish/newLogroByWish.dart';
 import 'package:indicator/views/wish/newWish.dart';
 
 class Viewwishesbyindicator extends StatefulWidget {
@@ -73,8 +74,7 @@ class _ViewwishesbyindicatorState extends State<Viewwishesbyindicator> {
                         color: Global.text,
                       ),
                       onTap: () {
-                        print("Diste click al deseo con ID: $idDeseo y nombre: $nombreDeseo");
-                        // Aquí podrás añadir acciones futuras para interactuar con el deseo
+                        newLogroByWish(controller.Indicator["indicator"]["id"], nombreDeseo);
                       },
                     ),
                   );

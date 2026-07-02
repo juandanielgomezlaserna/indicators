@@ -9,9 +9,13 @@ import 'package:indicator/utils/widgetsApp.dart';
 void newWish(int idIndicator) {
   final formKey = GlobalKey<FormState>();
   final nombreController = TextEditingController();
+
+  // Variable local para controlar el estado de carga
+  bool isLoading = false;
+
   Get.dialog(
     Dialog(
-      backgroundColor: Global.card, // Fondo oscuro para mantener tu estética
+      backgroundColor: Global.card,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -43,31 +47,79 @@ void newWish(int idIndicator) {
                 decoration: Wapp.globalInput(hint: "Nombre", label: "Nombre del deseo"),
                 controller: nombreController,
                 style: TextStyle(color: Global.text),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Por favor ingresa un nombre';
+                  }
+                  return null;
+                },
               ),
               const SizedBox(height: 15),
-              // --- Botón de Acción ---
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Global.action,
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  onPressed: () async {
-                    controller.newWishController(nombreController.text, controller.Indicator["indicator"]["id"]);
-                  },
-                  child: Text(
-                    "Guardar Deseo",
-                    style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
-                  ),
-                ),
+
+              // --- Botón de Acción con Carga Progresiva ---
+              StatefulBuilder(
+                builder: (context, setModalState) {
+                  return SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Global.action,
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      // Si está cargando, desactivamos el onPressed pasando null
+                      onPressed: isLoading
+                          ? null
+                          : () async {
+                        if (formKey.currentState!.validate()) {
+                          // 1. Cambiamos el estado a cargando y refrescamos el botón
+                          setModalState(() {
+                            isLoading = true;
+                          });
+
+                          try {
+                            // 2. Ejecutamos la petición al controlador
+                            await controller.newWishController(
+                              nombreController.text.trim(),
+                              idIndicator, // Usamos el parámetro directo que recibe la función
+                            );
+
+                            // 3. Si todo sale bien, cerramos el modal
+                            Get.back();
+                          } catch (e) {
+                            print("Error al guardar el deseo: $e");
+                          } finally {
+                            // 4. En caso de error, liberamos el botón por seguridad
+                            if (Get.isDialogOpen ?? false) {
+                              setModalState(() {
+                                isLoading = false;
+                              });
+                            }
+                          }
+                        }
+                      },
+                      child: isLoading
+                          ? SizedBox(
+                        height: 24,
+                        width: 24,
+                        child: CircularProgressIndicator(
+                          color: Global.bg,
+                          strokeWidth: 2.5,
+                        ),
+                      )
+                          : Text(
+                        "Guardar Deseo",
+                        style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  );
+                },
               )
             ],
           ),
         ),
       ),
     ),
-    barrierDismissible: true, // Permite cerrar tocando afuera (buena práctica de UX)
+    barrierDismissible: true,
   );
 }
