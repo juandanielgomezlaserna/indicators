@@ -5,6 +5,7 @@ import 'package:get/get.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/models/wishApi.dart';
+import 'package:indicator/views/finance/Homefinance.dart';
 import 'package:indicator/views/indicator/HomeIndicator.dart';
 import 'package:indicator/views/selectUser.dart';
 import 'package:indicator/views/wish/HomeWish.dart';
@@ -21,7 +22,10 @@ class MyController extends GetxController{
   final pages = {
     "indicator" : Homeindicator(),
     "wish" : Homewish(),
+    "finance" : Homefinance(),
   }.obs;
+  final bolsillos = [].obs;
+  final movimientos = [].obs;
 
   void setSplash (){
     timer?.cancel();
@@ -62,6 +66,19 @@ class MyController extends GetxController{
 
   void setIndicatorsWishes (List item) {
     indicatorsWishes.value = item;
+  }
+
+  void setBolsillos(List list) {
+    bolsillos.value = list;
+  }
+
+  double get totalBalance {
+    double total = 0.0;
+    for (var b in bolsillos) {
+      double bal = double.tryParse(b['balance']?.toString() ?? '0') ?? 0.0;
+      total += bal;
+    }
+    return total;
   }
 
   Future<void> newLogroController(String name, String puntosString, int idIndicador) async {
@@ -134,6 +151,9 @@ class MyController extends GetxController{
     await newIndicator(nombre, valor, tipo);
   }
 
+  void setMovimientos(List list) {
+    movimientos.value = list;
+  }
 
   List get Indicators => indicators.value;
   List get Logros => logros.value;

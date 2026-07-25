@@ -56,6 +56,12 @@ class _HomeprincipalState extends State<Homeprincipal> {
                   },
                   icon: Icon(CupertinoIcons.book_fill, size: 50,)
               ),
+              IconButton(
+                  onPressed: (){
+                    controller.setPage("finance");
+                  },
+                  icon: Icon(Icons.wallet, size: 50,)
+              ),
             ],
           ),
         ),
