@@ -26,6 +26,7 @@ class MyController extends GetxController{
   }.obs;
   final bolsillos = [].obs;
   final movimientos = [].obs;
+  final deudas = [].obs;
 
   void setSplash (){
     timer?.cancel();
@@ -153,6 +154,10 @@ class MyController extends GetxController{
 
   void setMovimientos(List list) {
     movimientos.value = list;
+  }
+
+  void setDeudas (List list) {
+    deudas.value = list;
   }
 
   List get Indicators => indicators.value;

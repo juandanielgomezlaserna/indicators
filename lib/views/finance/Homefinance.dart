@@ -5,9 +5,12 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/carteraBolsilloApi.dart';
+import 'package:indicator/models/carteraDeudaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
-import 'package:indicator/views/finance/newMovimiento.dart'; // Asegúrate de que aquí esté tu controlador global
+import 'package:indicator/views/finance/newDeuda.dart';
+import 'package:indicator/views/finance/newMovimiento.dart';
+import 'package:indicator/views/finance/newTransferencia.dart'; // Asegúrate de que aquí esté tu controlador global
 // Importa tus llamadas de API o controladores de finanzas correspondientes
 
 class Homefinance extends StatefulWidget {
@@ -23,12 +26,13 @@ class _HomefinanceState extends State<Homefinance> {
     super.initState();
     getBolsillos();
     getMovimientosApi();
+    getDeudasApi();
   }
 
   // Mapeo dinámico de íconos según el tipo de bolsillo de base de datos
   IconData getBolsilloIcon(String tipo) {
     switch (tipo.toLowerCase()) {
-      case 'Bolsillo':
+      case 'efectivo':
         return Icons.account_balance_wallet_rounded;
       case 'debito':
         return Icons.payment_rounded;
@@ -141,7 +145,9 @@ class _HomefinanceState extends State<Homefinance> {
                 _buildActionButton(
                   icon: Icons.swap_horiz_rounded,
                   label: "Transferir",
-                  onTap: () {},
+                  onTap: () {
+                    newTransferenciaModal(context);
+                  },
                 ),
                 _buildActionButton(
                   icon: Icons.trending_down_rounded,
@@ -211,7 +217,68 @@ class _HomefinanceState extends State<Homefinance> {
 
             const SizedBox(height: 25),
 
-            // 4. HISTORIAL RECIENTE (Estilo extracto)
+            // 3.5. SECCIÓN: MIS DEUDAS (Scroll Horizontal o Lista)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Mis Deudas",
+                  style: GoogleFonts.poppins(color: Global.text, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_outline_rounded, color: Global.action),
+                  onPressed: () {
+                    newDeudaModal(context); // 👈 Abre modal para crear deuda
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 140,
+              child: Obx(() {
+                if (controller.deudas.isEmpty) {
+                  return Card(
+                    color: Global.card,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          "No tienes deudas registradas. ¡Excelente!",
+                          style: TextStyle(color: Global.sutil, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: controller.deudas.length,
+                  itemBuilder: (context, index) {
+                    final deuda = controller.deudas[index];
+
+                    final int id = int.tryParse(deuda['id']?.toString() ?? '0') ?? 0;
+                    final String acreedor = deuda['acreedor'] ?? 'Desconocido';
+                    final double montoInicial = double.tryParse(deuda['monto_inicial']?.toString() ?? '0') ?? 0.0;
+                    final double montoPendiente = double.tryParse(deuda['monto_pendiente']?.toString() ?? '0') ?? 0.0;
+
+                    return _buildDeudaCard(
+                      id: id,
+                      acreedor: acreedor,
+                      montoInicial: montoInicial,
+                      montoPendiente: montoPendiente,
+                    );
+                  },
+                );
+              }),
+            ),
+
+            const SizedBox(height: 25),
+
             // 4. HISTORIAL RECIENTE (Estilo extracto)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -225,7 +292,7 @@ class _HomefinanceState extends State<Homefinance> {
             ),
             const SizedBox(height: 12),
 
-// Lista reactiva de transacciones
+            // Lista reactiva de transacciones
             Obx(() {
               if (controller.movimientos.isEmpty) {
                 return Card(
@@ -356,6 +423,89 @@ class _HomefinanceState extends State<Homefinance> {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: esNegativo ? Colors.redAccent : Global.text.withOpacity(0.9)
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget Auxiliar: Tarjeta de cada Deuda
+  Widget _buildDeudaCard({
+    required int id,
+    required String acreedor,
+    required double montoInicial,
+    required double montoPendiente,
+  }) {
+    // Cálculo de porcentaje pagado
+    final double pagado = montoInicial - montoPendiente;
+    final double porcentaje = montoInicial > 0 ? (pagado / montoInicial).clamp(0.0, 1.0) : 0.0;
+
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        color: Global.card,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      acreedor,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      abonarDeudaModal(context, deudaId: id, acreedor: acreedor, montoPendiente: montoPendiente);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Global.action.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        "Abonar",
+                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.action),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "Pendiente:",
+                    style: TextStyle(fontSize: 10, color: Global.sutil),
+                  ),
+                  Text(
+                    "\$${montoPendiente.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: porcentaje,
+                      backgroundColor: Global.bg,
+                      color: Global.action,
+                      minHeight: 6,
                     ),
                   ),
                 ],
