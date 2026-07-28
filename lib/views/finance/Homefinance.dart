@@ -622,7 +622,7 @@ class _HomefinanceState extends State<Homefinance> {
                       depositarMetaModal(
                         context,
                         metaId: id,
-                        nombreMeta: nombre,›
+                        nombreMeta: nombre,
                         montoObjetivo: montoObjetivo,
                         montoActual: montoActual,
                       );
