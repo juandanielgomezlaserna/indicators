@@ -6,9 +6,11 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/carteraBolsilloApi.dart';
 import 'package:indicator/models/carteraDeudaApi.dart';
+import 'package:indicator/models/carteraMetaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
+import 'package:indicator/views/finance/newMeta.dart';
 import 'package:indicator/views/finance/newMovimiento.dart';
 import 'package:indicator/views/finance/newTransferencia.dart'; // Asegúrate de que aquí esté tu controlador global
 // Importa tus llamadas de API o controladores de finanzas correspondientes
@@ -27,6 +29,7 @@ class _HomefinanceState extends State<Homefinance> {
     getBolsillos();
     getMovimientosApi();
     getDeudasApi();
+    getMetasApi();
   }
 
   // Mapeo dinámico de íconos según el tipo de bolsillo de base de datos
@@ -279,6 +282,68 @@ class _HomefinanceState extends State<Homefinance> {
 
             const SizedBox(height: 25),
 
+            // 3.8. SECCIÓN: MIS METAS DE AHORRO (Scroll Horizontal)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Mis Metas de Ahorro",
+                  style: GoogleFonts.poppins(color: Global.text, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_outline_rounded, color: Global.action),
+                  onPressed: () {
+                    newMetaModal(context); // 👈 Abre modal para crear meta
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 140,
+              child: Obx(() {
+                if (controller.metas.isEmpty) {
+                  return Card(
+                    color: Global.card,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          "No tienes metas o deseos guardados. ¡Empieza a ahorrar hoy!",
+                          style: TextStyle(color: Global.sutil, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: controller.metas.length,
+                  itemBuilder: (context, index) {
+                    final meta = controller.metas[index];
+
+                    final int id = int.tryParse(meta['id']?.toString() ?? '0') ?? 0;
+                    final String nombre = meta['nombre'] ?? 'Sin Nombre';
+                    final double montoObjetivo = double.tryParse(meta['monto_objetivo']?.toString() ?? '0') ?? 0.0;
+                    final double montoActual = double.tryParse(meta['monto_actual']?.toString() ?? '0') ?? 0.0;
+
+                    return _buildMetaCard(
+                      id: id,
+                      nombre: nombre,
+                      montoObjetivo: montoObjetivo,
+                      montoActual: montoActual,
+                    );
+                  },
+                );
+              }),
+            ),
+
+            const SizedBox(height: 25),
+
             // 4. HISTORIAL RECIENTE (Estilo extracto)
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -505,6 +570,118 @@ class _HomefinanceState extends State<Homefinance> {
                       value: porcentaje,
                       backgroundColor: Global.bg,
                       color: Global.action,
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Widget Auxiliar: Tarjeta de cada Meta de Ahorro
+  Widget _buildMetaCard({
+    required int id,
+    required String nombre,
+    required double montoObjetivo,
+    required double montoActual,
+  }) {
+    // Cálculo del porcentaje del avance (de 0.0 a 1.0)
+    final double porcentaje = montoObjetivo > 0 ? (montoActual / montoObjetivo).clamp(0.0, 1.0) : 0.0;
+    final bool completado = montoActual >= montoObjetivo && montoObjetivo > 0;
+
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        color: Global.card,
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      nombre,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  InkWell(
+                    onTap: () {
+                      depositarMetaModal(
+                        context,
+                        metaId: id,
+                        nombreMeta: nombre,›
+                        montoObjetivo: montoObjetivo,
+                        montoActual: montoActual,
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: completado
+                            ? Colors.green.withOpacity(0.15)
+                            : Global.action.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        completado ? "¡Logrado!" : "Abonar",
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: completado ? Colors.green : Global.action,
+                        ),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        "Ahorrado:",
+                        style: TextStyle(fontSize: 10, color: Global.sutil),
+                      ),
+                      Text(
+                        "${(porcentaje * 100).toStringAsFixed(0)}%",
+                        style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                            color: completado ? Colors.green : Global.action
+                        ),
+                      ),
+                    ],
+                  ),
+                  Text(
+                    "\$${montoActual.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} / \$${montoObjetivo.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                    style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: completado ? Colors.green : Global.text
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: LinearProgressIndicator(
+                      value: porcentaje,
+                      backgroundColor: Global.bg,
+                      color: completado ? Colors.green : Global.action,
                       minHeight: 6,
                     ),
                   ),
