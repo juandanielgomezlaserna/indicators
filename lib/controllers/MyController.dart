@@ -28,6 +28,7 @@ class MyController extends GetxController{
   final movimientos = [].obs;
   final deudas = [].obs;
   final metas = [].obs;
+  final recurrentes = [].obs;
 
   void setSplash (){
     timer?.cancel();
@@ -163,6 +164,10 @@ class MyController extends GetxController{
 
   void setMetas (List list) {
     metas.value = list;
+  }
+
+  void setRecurrentes (List list) {
+    recurrentes.value = list;
   }
 
   List get Indicators => indicators.value;

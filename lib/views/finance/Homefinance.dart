@@ -8,10 +8,12 @@ import 'package:indicator/models/carteraBolsilloApi.dart';
 import 'package:indicator/models/carteraDeudaApi.dart';
 import 'package:indicator/models/carteraMetaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
+import 'package:indicator/models/carteraRecurrenteApi.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
 import 'package:indicator/views/finance/newMeta.dart';
 import 'package:indicator/views/finance/newMovimiento.dart';
+import 'package:indicator/views/finance/newRecurrente.dart';
 import 'package:indicator/views/finance/newTransferencia.dart'; // Asegúrate de que aquí esté tu controlador global
 // Importa tus llamadas de API o controladores de finanzas correspondientes
 
@@ -30,6 +32,7 @@ class _HomefinanceState extends State<Homefinance> {
     getMovimientosApi();
     getDeudasApi();
     getMetasApi();
+    getRecurrentesApi();
   }
 
   // Mapeo dinámico de íconos según el tipo de bolsillo de base de datos
@@ -336,6 +339,71 @@ class _HomefinanceState extends State<Homefinance> {
                       nombre: nombre,
                       montoObjetivo: montoObjetivo,
                       montoActual: montoActual,
+                    );
+                  },
+                );
+              }),
+            ),
+
+            const SizedBox(height: 25),
+
+            // 3.9. SECCIÓN: COMPROMISOS RECURRENTES (Scroll Horizontal)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  "Gastos e Ingresos Fijos",
+                  style: GoogleFonts.poppins(color: Global.text, fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                IconButton(
+                  icon: Icon(Icons.add_circle_outline_rounded, color: Global.action),
+                  onPressed: () {
+                    newRecurrenteModal(context); // 👈 Abre modal
+                  },
+                )
+              ],
+            ),
+            const SizedBox(height: 8),
+
+            SizedBox(
+              height: 135,
+              child: Obx(() {
+                if (controller.recurrentes.isEmpty) {
+                  return Card(
+                    color: Global.card,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Center(
+                        child: Text(
+                          "No tienes suscripciones o cobros fijos programados.",
+                          style: TextStyle(color: Global.sutil, fontSize: 13),
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: controller.recurrentes.length,
+                  itemBuilder: (context, index) {
+                    final item = controller.recurrentes[index];
+
+                    final String descripcion = item['descripcion'] ?? 'Sin Nombre';
+                    final String tipo = item['tipo'] ?? 'gasto';
+                    final double monto = double.tryParse(item['monto']?.toString() ?? '0') ?? 0.0;
+                    final String frecuencia = item['frecuencia'] ?? 'mensual';
+                    final String fecha = item['proxima_ejecucion']?.toString().split('T').first ?? '';
+
+                    return _buildRecurrenteCard(
+                      id:  item["id"],
+                      descripcion: descripcion,
+                      tipo: tipo,
+                      monto: monto,
+                      frecuencia: frecuencia,
+                      proximaEjecucion: fecha,
                     );
                   },
                 );
@@ -685,6 +753,136 @@ class _HomefinanceState extends State<Homefinance> {
                       minHeight: 6,
                     ),
                   ),
+                ],
+              )
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRecurrenteCard({
+    required int id,
+    required String descripcion,
+    required String tipo,
+    required double monto,
+    required String frecuencia,
+    required String proximaEjecucion,
+  }) {
+    final bool esGasto = tipo.toLowerCase() == 'gasto';
+
+    // Lógica para detectar si vence HOY o está VENCIDA
+    final DateTime hoy = DateTime.now();
+    final DateTime fechaHoyPura = DateTime(hoy.year, hoy.month, hoy.day);
+    final DateTime fechaVencimiento = DateTime.tryParse(proximaEjecucion) ?? hoy;
+    final DateTime fechaVencPura = DateTime(fechaVencimiento.year, fechaVencimiento.month, fechaVencimiento.day);
+
+    final bool esHoyOVencido = fechaVencPura.isBefore(fechaHoyPura) || fechaVencPura.isAtSameMomentAs(fechaHoyPura);
+
+    return Container(
+      width: 200,
+      margin: const EdgeInsets.only(right: 12),
+      child: Card(
+        color: esHoyOVencido ? const Color(0xFF2C221E) : Global.card, // Destacar fondo si es hoy
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+          side: esHoyOVencido
+              ? const BorderSide(color: Colors.orangeAccent, width: 1.5)
+              : BorderSide.none,
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              // Cabecera: Nombre + Badge Frecuencia
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Text(
+                      descripcion,
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: (esGasto ? Colors.redAccent : Global.action).withOpacity(0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      frecuencia.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 9,
+                        fontWeight: FontWeight.bold,
+                        color: esGasto ? Colors.redAccent : Global.action,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              // Monto y Fecha con Acción
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${esGasto ? '-' : '+'}\$${monto.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: esGasto ? Colors.redAccent : Global.action,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+
+                  // Botón "Pagar Hoy" o Texto Normal
+                  if (esHoyOVencido)
+                    SizedBox(
+                      width: double.infinity,
+                      height: 28,
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.orangeAccent,
+                          padding: EdgeInsets.zero,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                        icon: const Icon(Icons.check_circle_rounded, size: 14, color: Colors.black),
+                        label: const Text(
+                          "¡Pagar Hoy!",
+                          style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold),
+                        ),
+                        onPressed: () async {
+                          final ok = await ejecutarRecurrenteApi(id);
+                          if (ok) {
+                            Get.snackbar(
+                              "Éxito",
+                              "Se ha registrado el pago de $descripcion",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Global.action,
+                              colorText: Colors.white,
+                            );
+                          }
+                        },
+                      ),
+                    )
+                  else
+                    Row(
+                      children: [
+                        Icon(Icons.event_repeat_rounded, size: 12, color: Global.sutil),
+                        const SizedBox(width: 4),
+                        Text(
+                          "Próximo: $proximaEjecucion",
+                          style: TextStyle(fontSize: 10, color: Global.sutil),
+                        ),
+                      ],
+                    ),
                 ],
               )
             ],
