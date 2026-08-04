@@ -9,6 +9,7 @@ import 'package:indicator/models/carteraDeudaApi.dart';
 import 'package:indicator/models/carteraMetaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/models/carteraRecurrenteApi.dart';
+import 'package:indicator/views/finance/editarRecurrenteModal.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
 import 'package:indicator/views/finance/newMeta.dart';
@@ -390,7 +391,6 @@ class _HomefinanceState extends State<Homefinance> {
                   itemCount: controller.recurrentes.length,
                   itemBuilder: (context, index) {
                     final item = controller.recurrentes[index];
-
                     final String descripcion = item['descripcion'] ?? 'Sin Nombre';
                     final String tipo = item['tipo'] ?? 'gasto';
                     final double monto = double.tryParse(item['monto']?.toString() ?? '0') ?? 0.0;
@@ -398,12 +398,16 @@ class _HomefinanceState extends State<Homefinance> {
                     final String fecha = item['proxima_ejecucion']?.toString().split('T').first ?? '';
 
                     return _buildRecurrenteCard(
-                      id:  item["id"],
+                      id: item["id"],
                       descripcion: descripcion,
                       tipo: tipo,
                       monto: monto,
                       frecuencia: frecuencia,
                       proximaEjecucion: fecha,
+                      // 👈 AGREGAS EL ONTAP AQUÍ
+                      onTap: () {
+                        _abrirModalEdicion(item); // O directamente llamar a EditarRecurrenteModal
+                      },
                     );
                   },
                 );
@@ -769,6 +773,7 @@ class _HomefinanceState extends State<Homefinance> {
     required double monto,
     required String frecuencia,
     required String proximaEjecucion,
+    VoidCallback? onTap,
   }) {
     final bool esGasto = tipo.toLowerCase() == 'gasto';
 
@@ -783,111 +788,132 @@ class _HomefinanceState extends State<Homefinance> {
     return Container(
       width: 200,
       margin: const EdgeInsets.only(right: 12),
-      child: Card(
-        color: esHoyOVencido ? const Color(0xFF2C221E) : Global.card, // Destacar fondo si es hoy
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
-          side: esHoyOVencido
-              ? const BorderSide(color: Colors.orangeAccent, width: 1.5)
-              : BorderSide.none,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Cabecera: Nombre + Badge Frecuencia
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      descripcion,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Card(
+          color: esHoyOVencido ? const Color(0xFF2C221E) : Global.card,
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+            side: esHoyOVencido
+                ? const BorderSide(color: Colors.orangeAccent, width: 1.5)
+                : BorderSide.none,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        descripcion,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: (esGasto ? Colors.redAccent : Global.action).withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(6),
+                    if (esHoyOVencido)
+                      InkWell(
+                        onTap: () {
+                          // Acción opcional para procesar o pagar el cobro de inmediato
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.orangeAccent.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Text(
+                            "¡Pagar hoy!",
+                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.orangeAccent),
+                          ),
+                        ),
+                      )
+                    else
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Global.action.withOpacity(0.12),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          frecuencia.toUpperCase(),
+                          style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: Global.action),
+                        ),
+                      ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Próximo cobro: $proximaEjecucion",
+                      style: TextStyle(fontSize: 10, color: esHoyOVencido ? Colors.orangeAccent : Global.sutil),
                     ),
-                    child: Text(
-                      frecuencia.toUpperCase(),
+                    const SizedBox(height: 2),
+                    Text(
+                      "${esGasto ? '-' : '+'}\$${monto.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
                       style: TextStyle(
-                        fontSize: 9,
+                        fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: esGasto ? Colors.redAccent : Global.action,
                       ),
                     ),
-                  ),
-                ],
-              ),
-
-              // Monto y Fecha con Acción
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "${esGasto ? '-' : '+'}\$${monto.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: esGasto ? Colors.redAccent : Global.action,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-
-                  // Botón "Pagar Hoy" o Texto Normal
-                  if (esHoyOVencido)
-                    SizedBox(
-                      width: double.infinity,
-                      height: 28,
-                      child: ElevatedButton.icon(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.orangeAccent,
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                        ),
-                        icon: const Icon(Icons.check_circle_rounded, size: 14, color: Colors.black),
-                        label: const Text(
-                          "¡Pagar Hoy!",
-                          style: TextStyle(color: Colors.black, fontSize: 11, fontWeight: FontWeight.bold),
-                        ),
-                        onPressed: () async {
-                          final ok = await ejecutarRecurrenteApi(id);
-                          if (ok) {
-                            Get.snackbar(
-                              "Éxito",
-                              "Se ha registrado el pago de $descripcion",
-                              snackPosition: SnackPosition.BOTTOM,
-                              backgroundColor: Global.action,
-                              colorText: Colors.white,
-                            );
-                          }
-                        },
-                      ),
-                    )
-                  else
-                    Row(
-                      children: [
-                        Icon(Icons.event_repeat_rounded, size: 12, color: Global.sutil),
-                        const SizedBox(width: 4),
-                        Text(
-                          "Próximo: $proximaEjecucion",
-                          style: TextStyle(fontSize: 10, color: Global.sutil),
-                        ),
-                      ],
-                    ),
-                ],
-              )
-            ],
+                  ],
+                )
+              ],
+            ),
           ),
         ),
+      ),
+    );
+  }
+
+  void _abrirModalEdicion(Map<String, dynamic> item) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => EditarRecurrenteModal(
+        recurrente: item,
+        onGuardar: (datosEditados) async {
+          // 👈 Pasamos los parámetros de forma nombrada extrayéndolos del mapa
+          bool exito = await editarRecurrenteApi(
+            id: datosEditados['id'],
+            descripcion: datosEditados['descripcion'],
+            monto: datosEditados['monto'],
+            frecuencia: datosEditados['frecuencia'],
+            categoria: datosEditados['categoria'],
+            bolsilloId: datosEditados['bolsillo_id'],
+            proximaEjecucion: datosEditados['proxima_ejecucion'],
+            activo: datosEditados['activo'],
+          );
+
+          if (exito) {
+            await getRecurrentesApi(); // Refresca la lista desde el servidor
+
+            Get.snackbar(
+              "Suscripción Actualizada",
+              "Los cambios han sido guardados correctamente",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Global.action,
+              colorText: Colors.black,
+            );
+          } else {
+            Get.snackbar(
+              "Error",
+              "No se pudieron actualizar los datos",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+          }
+        },
       ),
     );
   }

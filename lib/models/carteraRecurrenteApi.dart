@@ -125,3 +125,48 @@ Future<bool> ejecutarRecurrenteApi(int id) async {
     return false;
   }
 }
+
+Future<bool> editarRecurrenteApi({
+  required int id,
+  String? descripcion,
+  double? monto,
+  String? categoria,
+  String? frecuencia,
+  String? proximaEjecucion,
+  int? bolsilloId,
+  bool? activo,
+}) async {
+  try {
+    final url = Uri.parse('${Global.baseUrl}cartera-recurrentes/$id');
+
+    final Map<String, dynamic> body = {
+    };
+
+    if (descripcion != null && descripcion.isNotEmpty) body['descripcion'] = descripcion;
+    if (monto != null) body['monto'] = monto;
+    if (categoria != null && categoria.isNotEmpty) body['categoria'] = categoria;
+    if (frecuencia != null && frecuencia.isNotEmpty) body['frecuencia'] = frecuencia.toLowerCase();
+    if (proximaEjecucion != null && proximaEjecucion.isNotEmpty) body['proxima_ejecucion'] = proximaEjecucion.split('T').first;
+    if (bolsilloId != null) body['bolsillo_id'] = bolsilloId;
+    if (activo != null) body['activo'] = activo;
+
+    final response = await http.patch(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return true;
+    }
+
+    print("⚠️ Error Server [${response.statusCode}]: ${response.body}");
+    return false;
+  } catch (e) {
+    print("❌ Excepción en editarRecurrenteApi: $e");
+    return false;
+  }
+}
