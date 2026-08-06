@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
+import 'package:indicator/models/carteraBalanceApi.dart';
 import 'package:indicator/models/carteraBolsilloApi.dart';
 import 'package:indicator/models/carteraDeudaApi.dart';
 import 'package:indicator/models/carteraMetaApi.dart';
@@ -15,7 +16,8 @@ import 'package:indicator/views/finance/newDeuda.dart';
 import 'package:indicator/views/finance/newMeta.dart';
 import 'package:indicator/views/finance/newMovimiento.dart';
 import 'package:indicator/views/finance/newRecurrente.dart';
-import 'package:indicator/views/finance/newTransferencia.dart'; // Asegúrate de que aquí esté tu controlador global
+import 'package:indicator/views/finance/newTransferencia.dart';
+import 'package:intl/intl.dart'; // Asegúrate de que aquí esté tu controlador global
 // Importa tus llamadas de API o controladores de finanzas correspondientes
 
 class Homefinance extends StatefulWidget {
@@ -26,6 +28,15 @@ class Homefinance extends StatefulWidget {
 }
 
 class _HomefinanceState extends State<Homefinance> {
+  double limiteSemanal = 0.0;
+  String estadoFinanciero = "Cargando...";
+  bool isLoadingBalance = true;
+  final NumberFormat formatoMoneda = NumberFormat.currency(
+    locale: 'es_CO',
+    symbol: '\$',
+    decimalDigits: 0,
+  );
+
   @override
   void initState() {
     super.initState();
@@ -34,6 +45,7 @@ class _HomefinanceState extends State<Homefinance> {
     getDeudasApi();
     getMetasApi();
     getRecurrentesApi();
+    cargarResumenBalance();
   }
 
   // Mapeo dinámico de íconos según el tipo de bolsillo de base de datos
@@ -111,24 +123,38 @@ class _HomefinanceState extends State<Homefinance> {
                               style: TextStyle(fontSize: 11, color: Global.sutil),
                             ),
                             const SizedBox(height: 2),
-                            Text(
-                              "\$450.000", // TODO: Cálculo dinámico
-                              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.action),
+                            isLoadingBalance
+                                ? const SizedBox(
+                              height: 16,
+                              width: 16,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                                : Text(
+                              formatoMoneda.format(limiteSemanal),
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: Global.action,
+                              ),
                             ),
                           ],
                         ),
-                        // Pequeño indicador visual del estado semanal
+                        // Indicador visual dinámico del estado semanal
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
-                            color: Global.action.withOpacity(0.15),
+                            color: _getBadgeColor(estadoFinanciero).withOpacity(0.15),
                             borderRadius: BorderRadius.circular(20),
                           ),
                           child: Text(
-                            "Estable",
-                            style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Global.action),
+                            estadoFinanciero,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: _getBadgeColor(estadoFinanciero),
+                            ),
                           ),
-                        )
+                        ),
                       ],
                     )
                   ],
@@ -819,8 +845,28 @@ class _HomefinanceState extends State<Homefinance> {
                     ),
                     if (esHoyOVencido)
                       InkWell(
-                        onTap: () {
-                          // Acción opcional para procesar o pagar el cobro de inmediato
+                        onTap: () async {
+                          final bool exito = await ejecutarRecurrenteApi(id);
+
+                          // 2. Feedback visual según la respuesta
+                          if (exito) {
+                            Get.snackbar(
+                              "¡Éxito!",
+                              "Transacción ejecutada y saldos actualizados",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Global.action,
+                              colorText: Colors.black,
+                              duration: const Duration(seconds: 2),
+                            );
+                          } else {
+                            Get.snackbar(
+                              "Error",
+                              "No se pudo procesar el pago del recurrente",
+                              snackPosition: SnackPosition.BOTTOM,
+                              backgroundColor: Colors.redAccent,
+                              colorText: Colors.white,
+                            );
+                          }
                         },
                         child: Container(
                           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -916,5 +962,32 @@ class _HomefinanceState extends State<Homefinance> {
         },
       ),
     );
+  }
+
+  Future<void> cargarResumenBalance() async {
+    final data = await getResumenBalanceApi(controller.User);
+    if (data != null) {
+      setState(() {
+        limiteSemanal = (data['limite_semanal_recomendado'] as num).toDouble();
+        estadoFinanciero = data['estado'] ?? 'Estable';
+        isLoadingBalance = false;
+      });
+    } else {
+      setState(() {
+        isLoadingBalance = false;
+      });
+    }
+  }
+
+  Color _getBadgeColor(String estado) {
+    switch (estado.toLowerCase()) {
+      case 'crítico':
+        return Colors.redAccent;
+      case 'ajustado':
+        return Colors.orangeAccent;
+      case 'estable':
+      default:
+        return Global.action;
+    }
   }
 }
