@@ -48,7 +48,7 @@ void newLogro(int idIndicator) {
               ),
               const SizedBox(height: 15),
               TextFormField(
-                decoration: Wapp.globalInput(hint: "Puntos", label: "Puntos iniciales del indicador"),
+                decoration: Wapp.globalInput(hint: "Puntos", label: "Puntos que suma el indicador"),
                 controller: puntosController,
                 style: TextStyle(color: Global.text),
                 keyboardType: TextInputType.number, // Teclado numérico para mayor velocidad del usuario

@@ -17,8 +17,7 @@ import 'package:indicator/views/finance/newMeta.dart';
 import 'package:indicator/views/finance/newMovimiento.dart';
 import 'package:indicator/views/finance/newRecurrente.dart';
 import 'package:indicator/views/finance/newTransferencia.dart';
-import 'package:intl/intl.dart'; // Asegúrate de que aquí esté tu controlador global
-// Importa tus llamadas de API o controladores de finanzas correspondientes
+import 'package:intl/intl.dart';
 
 class Homefinance extends StatefulWidget {
   const Homefinance({super.key});
@@ -31,11 +30,135 @@ class _HomefinanceState extends State<Homefinance> {
   double limiteSemanal = 0.0;
   String estadoFinanciero = "Cargando...";
   bool isLoadingBalance = true;
+// Formateador de moneda
   final NumberFormat formatoMoneda = NumberFormat.currency(
     locale: 'es_CO',
     symbol: '\$',
     decimalDigits: 0,
   );
+
+// Variables en tu State o Controller
+  Map<String, dynamic>? desgloseData;
+
+  Future<void> cargarBalance() async {
+    setState(() => isLoadingBalance = true);
+
+    // ✅ Petición refactorizada: lee el JWT desde FlutterSecureStorage
+    final data = await getResumenBalanceApi();
+
+    if (data != null && mounted) {
+      setState(() {
+        limiteSemanal = (data['limite_semanal_recomendado'] as num).toDouble();
+        desgloseData = data;
+        isLoadingBalance = false;
+      });
+    }
+  }
+
+  /// Modal que muestra la matemática explicada al usuario
+  void mostrarModalDesglose(BuildContext context) {
+    if (desgloseData == null) return;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF1E2429), // Fondo oscuro acorde a la app
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final num disponible = desgloseData!['disponible_bolsillos'] ?? 0;
+        final num reservaMensual = desgloseData!['reserva_mensual_50'] ?? 0;
+        final num reservaQuincenal = desgloseData!['gasto_quincenal_100'] ?? 0;
+        final num compromisos = desgloseData!['total_compromisos'] ?? 0;
+        final num restaBruta = desgloseData!['resta_bruta'] ?? 0;
+        final bool proteccionCero = desgloseData!['aplica_proteccion_cero'] ?? false;
+
+        return Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "🧮 Desglose del Cálculo",
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white54),
+                    onPressed: () => Navigator.pop(context),
+                  )
+                ],
+              ),
+              const Divider(color: Colors.white24),
+              const SizedBox(height: 10),
+
+              _itemDesglose("Dinero Líquido Disponible", "+ ${formatoMoneda.format(disponible)}", Colors.greenAccent),
+              _itemDesglose("Reserva 50% Recurrentes Mensuales", "- ${formatoMoneda.format(reservaMensual)}", Colors.orangeAccent),
+              _itemDesglose("Reserva 100% Recurrentes Quincenales", "- ${formatoMoneda.format(reservaQuincenal)}", Colors.orangeAccent),
+
+              const Divider(color: Colors.white24),
+              _itemDesglose("Total Compromisos Quincena", "= ${formatoMoneda.format(compromisos)}", Colors.redAccent),
+              _itemDesglose("Disponible Real Quincenal", "= ${formatoMoneda.format(restaBruta < 0 ? 0 : restaBruta)}", Colors.cyanAccent),
+
+              if (proteccionCero) ...[
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.redAccent.withOpacity(0.15),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    "⚠️ Tus compromisos superan tu disponible actual. El cálculo se ajustó a \$0 para proteger tus gastos fijos.",
+                    style: TextStyle(fontSize: 11, color: Colors.redAccent),
+                  ),
+                )
+              ],
+
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Global.action.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      "Límite Semanal (Disponible / 2):",
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
+                    ),
+                    Text(
+                      formatoMoneda.format(limiteSemanal),
+                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Global.action),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+// Helper para filas del desglose
+  Widget _itemDesglose(String titulo, String valor, Color colorValor) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(titulo, style: const TextStyle(fontSize: 12, color: Colors.white70)),
+          Text(valor, style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: colorValor)),
+        ],
+      ),
+    );
+  }
 
   @override
   void initState() {
@@ -118,15 +241,28 @@ class _HomefinanceState extends State<Homefinance> {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(
-                              "Límite Semanal Recomendado",
-                              style: TextStyle(fontSize: 11, color: Global.sutil),
+                            Row(
+                              children: [
+                                Text(
+                                  "Límite Semanal Recomendado",
+                                  style: TextStyle(fontSize: 11, color: Global.sutil),
+                                ),
+                                const SizedBox(width: 4),
+                                GestureDetector(
+                                  onTap: () => mostrarModalDesglose(context),
+                                  child: Icon(
+                                    Icons.info_outline,
+                                    size: 14,
+                                    color: Global.action,
+                                  ),
+                                ),
+                              ],
                             ),
                             const SizedBox(height: 2),
                             isLoadingBalance
                                 ? const SizedBox(
-                              height: 16,
-                              width: 16,
+                              height: 14,
+                              width: 14,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
                                 : Text(
@@ -139,7 +275,7 @@ class _HomefinanceState extends State<Homefinance> {
                             ),
                           ],
                         ),
-                        // Indicador visual dinámico del estado semanal
+                        // Indicador visual del estado
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                           decoration: BoxDecoration(
@@ -965,7 +1101,7 @@ class _HomefinanceState extends State<Homefinance> {
   }
 
   Future<void> cargarResumenBalance() async {
-    final data = await getResumenBalanceApi(controller.User);
+    final data = await getResumenBalanceApi();
     if (data != null) {
       setState(() {
         limiteSemanal = (data['limite_semanal_recomendado'] as num).toDouble();

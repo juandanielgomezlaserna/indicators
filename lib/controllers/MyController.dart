@@ -1,13 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
+import 'package:indicator/models/authService.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/models/wishApi.dart';
+import 'package:indicator/views/HomePrincipal.dart';
 import 'package:indicator/views/finance/Homefinance.dart';
 import 'package:indicator/views/indicator/HomeIndicator.dart';
-import 'package:indicator/views/selectUser.dart';
+import 'package:indicator/views/login/login.dart';
+import 'package:indicator/views/user/Homeuser.dart';
 import 'package:indicator/views/wish/HomeWish.dart';
 
 class MyController extends GetxController{
@@ -16,13 +20,14 @@ class MyController extends GetxController{
   final indicatorsWishes = [].obs;
   final logros = [].obs;
   final logrosWeeks = [].obs;
-  final user = "".obs;
+  final user = {}.obs;
   final indicator = {}.obs;
   final page = "".obs;
   final pages = {
     "indicator" : Homeindicator(),
     "wish" : Homewish(),
     "finance" : Homefinance(),
+    "user" : Homeuser(),
   }.obs;
   final bolsillos = [].obs;
   final movimientos = [].obs;
@@ -30,17 +35,27 @@ class MyController extends GetxController{
   final metas = [].obs;
   final recurrentes = [].obs;
 
-  void setSplash (){
-    timer?.cancel();
-    int seconds = 2;
-    timer = Timer.periodic(Duration(seconds: 1), (timer){
-      if(seconds > 0){
-        seconds--;
-      }else{
-        Get.off(() => Selectuser());
-        timer.cancel();
+  Future<void> setSplash() async {
+    // 1. Espera 2 segundos para mostrar la pantalla de carga/splash
+    await Future.delayed(const Duration(seconds: 2));
+
+    try {
+      final authService = AuthService();
+
+      // 2. Valida el token con el servidor y carga el usuario en UserController
+      bool isAuthenticated = await authService.checkAuth();
+
+      // 3. Redirige de forma única y absoluta según el resultado
+      if (isAuthenticated) {
+        // Usamos Get.offAll para limpiar el splash y asegurar una sola navegación al Home
+        Get.offAll(() => const Homeprincipal());
+      } else {
+        Get.offAll(() => const LoginPage());
       }
-    });
+    } catch (e) {
+      print('Error verificando sesión en Splash: $e');
+      Get.offAll(() => const LoginPage());
+    }
   }
 
   void setPage (String item){
@@ -59,8 +74,12 @@ class MyController extends GetxController{
     logrosWeeks.value = item;
   }
 
-  void setUser (String item) {
+  void setUser (Map item) {
     user.value = item;
+  }
+
+  void clearUser (){
+    user.value.clear();
   }
 
   void setIndicator (Map item) {
@@ -173,17 +192,17 @@ class MyController extends GetxController{
   List get Indicators => indicators.value;
   List get Logros => logros.value;
   List get LogrosWeeks => logrosWeeks.value;
-  String get User => user.value;
+  Map get User => user.value;
   Map get Indicator => indicator.value;
   Map get Pages => pages.value;
   String get Page => page.value;
   List get IndicatorsWishes => indicatorsWishes.value;
 
   @override
-  void onInit() {
+  void onInit() async {
     // TODO: implement onInit
     super.onInit();
-    setSplash();
+    await setSplash();
     setPage("indicator");
   }
 }

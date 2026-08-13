@@ -19,7 +19,7 @@ class _HomeprincipalState extends State<Homeprincipal> {
   Widget build(BuildContext context) {
     return Obx(() => Scaffold(
       appBar: AppBar(
-        title: Text("Indicadores de vida V2.0", style: GoogleFonts.poppins(),),
+        title: Text("Indicadores de vida V3.0", style: GoogleFonts.poppins(),),
         foregroundColor: Global.action,
         leading: Icon(Icons.favorite),
         actions: [
@@ -61,6 +61,12 @@ class _HomeprincipalState extends State<Homeprincipal> {
                     controller.setPage("finance");
                   },
                   icon: Icon(Icons.wallet, size: 50,)
+              ),
+              IconButton(
+                  onPressed: (){
+                    controller.setPage("user");
+                  },
+                  icon: Icon(Icons.person, size: 50,)
               ),
             ],
           ),

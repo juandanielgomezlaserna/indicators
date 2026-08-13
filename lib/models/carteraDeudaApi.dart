@@ -1,23 +1,35 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart'; // Para acceder a 'controller'
 import 'package:indicator/models/carteraBolsilloApi.dart'; // Para refrescar bolsillos al abonar
 import 'package:indicator/models/carteraMovimientoApi.dart'; // Para refrescar movimientos al abonar
 
+// Instancia de almacenamiento seguro para recuperar el JWT token
+const _storage = FlutterSecureStorage();
+
 /**
- * Obtiene la lista de deudas activas del usuario activo
+ * Obtiene la lista de deudas activas del usuario autenticado
  */
 Future<void> getDeudasApi() async {
   try {
-    final String usuarioActivo = controller.User;
+    // 1. Recuperamos el token JWT guardado en Storage
+    final String? token = await _storage.read(key: 'jwt_token');
 
-    final url = Uri.parse('${Global.baseUrl}cartera-deudas/$usuarioActivo');
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return;
+    }
+
+    // Ruta neutra: la identidad del usuario la determina el backend mediante el token
+    final url = Uri.parse('${Global.baseUrl}cartera-deudas');
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
         'ngrok-skip-browser-warning': 'true',
       },
     );
@@ -44,18 +56,23 @@ Future<bool> createDeudaApi({
   required String acreedor,
   required double montoInicial,
   double? montoPendiente,
-  String tipo = 'no_obligatoria',
+  String tipo = 'cobrar',
   String? fechaLimitePago,
 }) async {
   try {
-    final String usuarioActivo = controller.User;
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
 
     final url = Uri.parse('${Global.baseUrl}cartera-deudas');
 
+    // No enviamos 'usuario': el ID proviene del token firmado
     final body = json.encode({
-      'usuario': usuarioActivo,
-      'acreedor': acreedor,
-      'monto_inicial': montoInicial,
+      'acreedor_deudor': acreedor,
+      'monto_total': montoInicial,
       'monto_pendiente': montoPendiente ?? montoInicial,
       'tipo': tipo,
       'fecha_limite_pago': fechaLimitePago,
@@ -65,12 +82,13 @@ Future<bool> createDeudaApi({
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
         'ngrok-skip-browser-warning': 'true',
       },
       body: body,
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 201 || response.statusCode == 200) {
       final decodedData = json.decode(response.body);
 
       if (decodedData['status'] == 'success') {
@@ -100,12 +118,17 @@ Future<bool> abonarDeudaApi({
   String? descripcion,
 }) async {
   try {
-    final String usuarioActivo = controller.User;
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
 
     final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId/abonar');
 
+    // No enviamos 'usuario': la autorización y validación de propiedad se hacen en el backend
     final body = json.encode({
-      'usuario': usuarioActivo,
       'bolsillo_id': bolsilloId,
       'monto': monto,
       'categoria': categoria,
@@ -116,6 +139,7 @@ Future<bool> abonarDeudaApi({
       url,
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
         'ngrok-skip-browser-warning': 'true',
       },
       body: body,
@@ -125,7 +149,7 @@ Future<bool> abonarDeudaApi({
       final decodedData = json.decode(response.body);
 
       if (decodedData['status'] == 'success') {
-        // Al abonar, sincronizamos: Deudas, Bolsillos (por el nuevo saldo) y Movimientos (por el gasto)
+        // Al abonar, sincronizamos: Deudas, Bolsillos y Movimientos
         await getDeudasApi();
         await getBolsillos();
         await getMovimientosApi();

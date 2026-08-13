@@ -1,24 +1,33 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:get/get.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:indicator/Global.dart';
-import 'package:indicator/main.dart'; // Para poder usar la instancia global de 'controller'
+import 'package:indicator/main.dart'; // Para usar 'controller'
+
+// Instancia de almacenamiento seguro
+const _storage = FlutterSecureStorage();
 
 /**
  * Obtiene todos los bolsillos del usuario logueado en la base de datos
  */
 Future<void> getBolsillos() async {
   try {
-    // Leemos dinámicamente el usuario activo del controlador global
-    final String usuarioActivo = controller.User;
+    // 1. Recuperamos el token directamente desde el Storage
+    final String? token = await _storage.read(key: 'jwt_token');
 
-    final url = Uri.parse('${Global.baseUrl}cartera-bolsillos/$usuarioActivo');
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-bolsillos');
 
     final response = await http.get(
       url,
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true', // Evita el bloqueo de Ngrok
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
       },
     );
 
@@ -45,12 +54,17 @@ Future<bool> createBolsillo({
   required double balance,
 }) async {
   try {
-    final String usuarioActivo = controller.User; // Extraemos el usuario logueado
+    // 1. Recuperamos el token directamente desde el Storage
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
 
     final url = Uri.parse('${Global.baseUrl}cartera-bolsillos');
 
     final body = json.encode({
-      'usuario': usuarioActivo,
       'nombre': nombre,
       'tipo': tipo,
       'balance': balance,
@@ -60,12 +74,13 @@ Future<bool> createBolsillo({
       url,
       headers: {
         'Content-Type': 'application/json',
-        'ngrok-skip-browser-warning': 'true', // Clave para que pase por Ngrok
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
       },
       body: body,
     );
 
-    if (response.statusCode == 201) {
+    if (response.statusCode == 201 || response.statusCode == 200) {
       final decodedData = json.decode(response.body);
 
       if (decodedData['status'] == 'success') {
