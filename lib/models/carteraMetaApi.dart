@@ -119,7 +119,7 @@ Future<bool> depositarAMetaApi({
       return false;
     }
 
-    final url = Uri.parse('${Global.baseUrl}cartera-metas/$metaId/depositar');
+    final url = Uri.parse('${Global.baseUrl}cartera-metas/$metaId/deposito');
 
     // Mantenemos solo la información del movimiento; la propiedad y validación la realiza Express
     final body = json.encode({

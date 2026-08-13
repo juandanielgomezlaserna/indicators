@@ -125,7 +125,7 @@ Future<bool> abonarDeudaApi({
       return false;
     }
 
-    final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId/abonar');
+    final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId/abono');
 
     // No enviamos 'usuario': la autorización y validación de propiedad se hacen en el backend
     final body = json.encode({
