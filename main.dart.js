@@ -30156,7 +30156,7 @@ case 7:n=a1
 if(n==null){A.aE("Error: No existe token en el storage.")
 q=!1
 s=1
-break}m=A.cc("https://indicators-api-dgij.onrender.com/api/v1/cartera-deudas/"+b+"/abonar",0,null)
+break}m=A.cc("https://indicators-api-dgij.onrender.com/api/v1/cartera-deudas/"+b+"/abono",0,null)
 h=t.N
 l=B.P.hv(A.Z(["bolsillo_id",a,"monto",c,"categoria",f,"descripcion",e],h,t.X))
 s=8
@@ -30297,7 +30297,7 @@ case 7:n=a0
 if(n==null){A.aE("Error: No existe token en el storage.")
 q=!1
 s=1
-break}m=A.cc("https://indicators-api-dgij.onrender.com/api/v1/cartera-metas/"+b+"/depositar",0,null)
+break}m=A.cc("https://indicators-api-dgij.onrender.com/api/v1/cartera-metas/"+b+"/deposito",0,null)
 h=t.N
 l=B.P.hv(A.Z(["bolsillo_id",a,"monto",c,"descripcion",f],h,t.X))
 s=8
