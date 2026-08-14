@@ -46,6 +46,12 @@ class _HomeprincipalState extends State<Homeprincipal> {
             children: [
               IconButton(
                   onPressed: (){
+                    controller.setPage("home");
+                  },
+                  icon: Icon(Icons.home, size: 50,)
+              ),
+              IconButton(
+                  onPressed: (){
                     controller.setPage("indicator");
                   },
                   icon: Icon(Icons.favorite, size: 50,)

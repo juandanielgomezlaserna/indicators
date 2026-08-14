@@ -9,6 +9,7 @@ import 'package:indicator/models/logrosApi.dart';
 import 'package:indicator/models/wishApi.dart';
 import 'package:indicator/views/HomePrincipal.dart';
 import 'package:indicator/views/finance/Homefinance.dart';
+import 'package:indicator/views/home/Homehome.dart';
 import 'package:indicator/views/indicator/HomeIndicator.dart';
 import 'package:indicator/views/login/login.dart';
 import 'package:indicator/views/user/Homeuser.dart';
@@ -28,6 +29,7 @@ class MyController extends GetxController{
     "wish" : Homewish(),
     "finance" : Homefinance(),
     "user" : Homeuser(),
+    "home" : Homehome(),
   }.obs;
   final bolsillos = [].obs;
   final movimientos = [].obs;
@@ -203,6 +205,6 @@ class MyController extends GetxController{
     // TODO: implement onInit
     super.onInit();
     await setSplash();
-    setPage("indicator");
+    setPage("home");
   }
 }
