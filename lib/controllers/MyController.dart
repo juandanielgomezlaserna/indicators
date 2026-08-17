@@ -204,7 +204,7 @@ class MyController extends GetxController{
   void onInit() async {
     // TODO: implement onInit
     super.onInit();
-    await setSplash();
+    //await setSplash();
     setPage("home");
   }
 }

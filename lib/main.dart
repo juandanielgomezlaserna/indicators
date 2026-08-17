@@ -88,9 +88,9 @@ class _SplashState extends State<Splash> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.favorite, size: 60, color: Global.action),
-                const SizedBox(height: 20),
-                CircularProgressIndicator(color: Global.action),
+                FadeIn(
+                  child: Image.asset("lib/assets/complete_logo.png", width: 150,)
+                )
               ],
             ),
           ),
