@@ -48,7 +48,7 @@ Future<void> getIndicators() async {
 /**
  * Registra un nuevo indicador para el usuario autenticado
  */
-Future<void> newIndicator(String nombre, int valor, String tipo) async {
+Future<void> newIndicator(String nombre, int valor) async {
   try {
     final String? token = await _storage.read(key: 'jwt_token');
 
@@ -63,7 +63,6 @@ Future<void> newIndicator(String nombre, int valor, String tipo) async {
     final body = jsonEncode({
       "nombre": nombre,
       "valor": valor,
-      "tipo": tipo,
     });
 
     final response = await http.post(
@@ -118,5 +117,82 @@ Future<void> getIndicatorById(int id) async {
     }
   } catch (e) {
     print("Error de conexión en getIndicatorById: $e");
+  }
+}
+
+/**
+ * Actualiza un indicador existente enviando los campos modificados
+ */
+Future<bool> updateIndicator(int id, {String? nombre, int? valor}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe un token activo en storage.");
+      return false;
+    }
+
+    final url = Uri.parse("${Global.baseUrl}indicator/$id");
+
+    // Construimos el mapa dinámicamente para enviar solo los campos que se deseen actualizar
+    final Map<String, dynamic> dataToUpdate = {};
+    if (nombre != null) dataToUpdate["nombre"] = nombre;
+    if (valor != null) dataToUpdate["valor"] = valor;
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: jsonEncode(dataToUpdate),
+    );
+
+    if (response.statusCode == 200) {
+      // Si se actualizó correctamente, refrescamos la lista general de indicadores
+      await getIndicators();
+      return true;
+    } else {
+      print("Error al actualizar el indicador: [${response.statusCode}] ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    print("Error de conexión en updateIndicator: $e");
+    return false;
+  }
+}
+
+Future<bool> deleteIndicator(int id) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe un token activo en storage.");
+      return false;
+    }
+
+    final url = Uri.parse("${Global.baseUrl}indicator/$id");
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      // Si se eliminó correctamente, refrescamos la lista general de indicadores
+      await getIndicators();
+      return true;
+    } else {
+      print("Error al eliminar el indicador: [${response.statusCode}] ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    print("Error de conexión en deleteIndicator: $e");
+    return false;
   }
 }

@@ -64,8 +64,8 @@ class MyController extends GetxController{
     page.value = item;
   }
 
-  void setIndicators (List item) {
-    indicators.value = item;
+  void setIndicators(List item) {
+    indicators.assignAll(item);
   }
 
   void setLogros (List item) {
@@ -170,9 +170,9 @@ class MyController extends GetxController{
     }
   }
 
-  Future<void> newIndicadorController (nombre, valorString, tipo) async {
+  Future<void> newIndicadorController (nombre, valorString) async {
     int valor = int.parse(valorString);
-    await newIndicator(nombre, valor, tipo);
+    await newIndicator(nombre, valor);
   }
 
   void setMovimientos(List list) {

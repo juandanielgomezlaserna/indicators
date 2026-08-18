@@ -170,3 +170,39 @@ Future<bool> updateCheckLogro(int id) async {
     return false;
   }
 }
+
+Future<bool> updateLogroApi(int id, String nombre, int puntos, int idIndicador) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe un token activo en storage.");
+      return false;
+    }
+
+    final response = await http.put(
+      Uri.parse("${Global.baseUrl}logro/$id"),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: jsonEncode({
+        "nombre": nombre,
+        "puntos": puntos,
+        "idIndicador": idIndicador,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      getLogrosPendientes();
+      return true;
+    } else {
+      print("Error al actualizar logro: [${response.statusCode}] ${response.body}");
+      return false;
+    }
+  } catch (e) {
+    print("Excepción en updateLogroApi: $e");
+    return false;
+  }
+}

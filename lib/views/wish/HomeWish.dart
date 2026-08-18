@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/wishApi.dart';
@@ -23,28 +24,56 @@ class _HomewishState extends State<Homewish> {
 
   @override
   Widget build(BuildContext context) {
-    return Obx(() => Padding(
-      padding: const EdgeInsets.all(20),
-      child: SingleChildScrollView(
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 50, left: 50, right: 50),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Usamos un Wrap con espaciado para que las tarjetas se organicen solas como cuadrícula
-            Wrap(
-              spacing: 15, // Espacio horizontal entre tarjetas
-              runSpacing: 15, // Espacio vertical entre filas
+            Row(
               children: [
-                // Renderizado dinámico mapeando los datos de tu controlador
-                ...controller.IndicatorsWishes.map<Widget>((indicator) {
-                  // Extraemos las variables del mapa JSON de forma segura
-                  final String nombre = indicator['nombre'] ?? 'Sin nombre';
-                  final int totalDeseos = indicator['total_deseos'] ?? 0;
-                  final String tipo = indicator['tipo'] ?? '';
+                SizedBox(width: 10,),
+                Text(
+                  "lista de deseos",
+                  style: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w600, color: Global.title, letterSpacing: -1.5),
+                ),
+              ],
+            ),
+            SizedBox(height: 10,),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                // Calculamos el ancho disponible de la pantalla o contenedor
+                double screenWidth = constraints.maxWidth;
+                int crossAxisCount = screenWidth > 600 ? 4 : 2; // 4 columnas en tablet/escritorio, 2 en celular
 
-                  return SizedBox(
-                    width: 160,
-                    height: 160,
-                    child: Card(
+                // Ancho individual de cada tarjeta restando los espacios (spacing)
+                double spacing = 15.0;
+                double totalSpacing = spacing * (crossAxisCount - 1);
+                double itemWidth = (screenWidth - totalSpacing) / crossAxisCount;
+
+                // Altura fija exacta en píxeles para cada tarjeta de deseos (160 píxeles como tenías)
+                double fixedItemHeight = 160.0;
+                double calculatedAspectRatio = itemWidth / fixedItemHeight;
+
+                return Obx(() => GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: controller.IndicatorsWishes.length,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,       // Columnas inteligentes según el ancho
+                    mainAxisSpacing: spacing,             // Espacio vertical entre filas
+                    crossAxisSpacing: spacing,            // Espacio horizontal entre columnas
+                    childAspectRatio: calculatedAspectRatio, // Mantiene la altura fija de forma perfecta
+                  ),
+                  itemBuilder: (context, index) {
+                    final indicator = controller.IndicatorsWishes[index];
+
+                    // Extraemos las variables del mapa JSON de forma segura
+                    final String nombre = indicator['nombre'] ?? 'Sin nombre';
+                    final int totalDeseos = indicator['total_deseos'] ?? 0;
+                    final String tipo = indicator['tipo'] ?? '';
+
+                    return Card(
                       color: Global.card,
                       elevation: 4,
                       shape: RoundedRectangleBorder(
@@ -77,10 +106,10 @@ class _HomewishState extends State<Homewish> {
                                   textAlign: TextAlign.center,
                                   maxLines: 2,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 15,
-                                      color: Global.text
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 15,
+                                    color: Global.text,
                                   ),
                                 ),
                                 const SizedBox(height: 8),
@@ -104,14 +133,15 @@ class _HomewishState extends State<Homewish> {
                           ),
                         ),
                       ),
-                    ),
-                  );
-                }).toList(), // Convertimos el map a una lista de widgets válida para el Wrap
-              ],
-            )
+                    );
+                  },
+                ));
+              },
+            ),
+            SizedBox(height: 90,),
           ],
         ),
       ),
-    ));
+    );
   }
 }

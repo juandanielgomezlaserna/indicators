@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
+import 'package:indicator/models/wishApi.dart';
 import 'package:indicator/utils/widgetsApp.dart';
 
 void newWish(int idIndicator) {
@@ -83,8 +84,7 @@ void newWish(int idIndicator) {
                               nombreController.text.trim(),
                               idIndicator, // Usamos el parámetro directo que recibe la función
                             );
-
-                            // 3. Si todo sale bien, cerramos el modal
+                            getIndicatorsWishes();
                             Get.back();
                           } catch (e) {
                             print("Error al guardar el deseo: $e");

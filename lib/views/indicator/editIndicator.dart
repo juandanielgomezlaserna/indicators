@@ -1,16 +1,22 @@
-// Función ágil para llamar al modal desde cualquier parte sin BuildContext
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
-import 'package:indicator/main.dart';
-import 'package:indicator/models/wishApi.dart';
+import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/utils/widgetsApp.dart';
 
-void newLogroByWish (int idIndicator, String name, int idWish) {
+/**
+ * Función ágil para mostrar el modal de edición de un indicador.
+ * Recibe el indicador actual para rellenar los campos por defecto.
+ */
+void editIndicador(Map<String, dynamic> indicadorActual) {
   final formKey = GlobalKey<FormState>();
-  final nombreController = TextEditingController(text: name);
-  final puntosController = TextEditingController();
+
+  // Pre-cargamos los controladores con los valores existentes
+  final nombreController = TextEditingController(text: indicadorActual['nombre'] ?? '');
+  final valorController = TextEditingController(text: indicadorActual['valor']?.toString() ?? '0');
+
   Get.dialog(
     Dialog(
       backgroundColor: Global.card, // Fondo oscuro para mantener tu estética
@@ -34,7 +40,7 @@ void newLogroByWish (int idIndicator, String name, int idWish) {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    "nuevo logro",
+                    "editar indicador",
                     style: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                 ],
@@ -43,20 +49,20 @@ void newLogroByWish (int idIndicator, String name, int idWish) {
 
               // --- Campos de Texto ---
               TextFormField(
-                decoration: Wapp.globalInput(hint: "nombre", label: "nombre del logro"),
+                decoration: Wapp.globalInput(hint: "nombre", label: "nombre del indicador"),
                 controller: nombreController,
                 style: TextStyle(color: Global.text),
               ),
               const SizedBox(height: 15),
               TextFormField(
-                decoration: Wapp.globalInput(hint: "puntos", label: "puntos iniciales del indicador"),
-                controller: puntosController,
+                decoration: Wapp.globalInput(hint: "valor", label: "valor del indicador"),
+                controller: valorController,
                 style: TextStyle(color: Global.text),
-                keyboardType: TextInputType.number, // Teclado numérico para mayor velocidad del usuario
+                keyboardType: TextInputType.number, // Teclado numérico
               ),
               const SizedBox(height: 25),
 
-              // --- Botón de Acción ---
+              // --- Botón de Acción: Actualizar ---
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -66,16 +72,26 @@ void newLogroByWish (int idIndicator, String name, int idWish) {
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
                   onPressed: () async {
-                    await controller.newLogroController(nombreController.text, puntosController.text, idIndicator);
-                    await deleteWishApi(idWish);
+                    int idIndicador = indicadorActual['id'];
+                    int parsedValor = int.tryParse(valorController.text) ?? 0;
+
+                    await updateIndicator(
+                      idIndicador,
+                      nombre: nombreController.text,
+                      valor: parsedValor,
+                    );
+
+                    Get.back(); // Cierra el modal al terminar
                   },
                   child: Text(
-                    "convertir en logro y eliminar",
+                    "actualizar indicador",
                     style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
-              SizedBox(height: 10,),
+              const SizedBox(height: 12),
+
+              // --- Botón de Acción: Eliminar con Confirmación ---
               SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -88,9 +104,9 @@ void newLogroByWish (int idIndicator, String name, int idWish) {
                     // Diálogo de confirmación antes de eliminar
                     Get.defaultDialog(
                       backgroundColor: Global.card,
-                      title: "eliminar deseo",
+                      title: "eliminar indicador",
                       titleStyle: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
-                      middleText: "¿estás seguro de que deseas eliminar este deseo? Esta acción no se puede deshacer.",
+                      middleText: "¿estás seguro de que deseas eliminar este indicador? Esta acción no se puede deshacer.",
                       middleTextStyle: GoogleFonts.inter(color: Global.text.withOpacity(0.8), fontSize: 14),
                       textConfirm: "sí, eliminar",
                       textCancel: "cancelar",
@@ -98,31 +114,32 @@ void newLogroByWish (int idIndicator, String name, int idWish) {
                       buttonColor: Colors.redAccent,
                       cancelTextColor: Global.text,
                       onConfirm: () async {
+                        int idIndicador = indicadorActual['id'];
+
                         // Cerramos primero el diálogo de confirmación
                         Get.back();
 
                         // Ejecutamos la petición de eliminación
-                        bool eliminado = await deleteWishApi(idWish);
+                        bool eliminado = await deleteIndicator(idIndicador);
 
                         if (eliminado) {
-                          await getWishesByIndicator(idIndicator);
-                          getIndicatorsWishes();
+                          // Cerramos también el modal de edición principal si fue exitoso
                           Get.back();
                         }
                       },
                     );
                   },
                   child: Text(
-                    "eliminar deseo",
+                    "eliminar indicador",
                     style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
+              )
             ],
           ),
         ),
       ),
     ),
-    barrierDismissible: true, // Permite cerrar tocando afuera (buena práctica de UX)
+    barrierDismissible: true, // Permite cerrar tocando afuera
   );
 }
