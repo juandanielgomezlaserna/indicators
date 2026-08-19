@@ -2,6 +2,7 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/controllers/MyController.dart';
@@ -9,9 +10,12 @@ import 'package:indicator/models/authService.dart';
 import 'package:indicator/views/HomePrincipal.dart';
 import 'package:indicator/views/login/login.dart'; // O la ruta correcta de tu home principal
 
-void main(){
+void main() async {
   // Registramos el controlador globalmente al iniciar la app
   Get.put(MyController());
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await GetStorage.init();
 
   runApp(
       GetMaterialApp(
