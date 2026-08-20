@@ -401,7 +401,8 @@ class _HomehomeState extends State<Homehome> {
                           ),
                         ),
                       ),
-                    )
+                    ),
+                    SizedBox(height: 50,),
                   ],
                 ),
               ),
