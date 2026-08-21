@@ -46,6 +46,7 @@ class _HomefinanceState extends State<Homefinance> {
     // ✅ Petición refactorizada: lee el JWT desde FlutterSecureStorage
     final data = await getResumenBalanceApi();
 
+    print("BALANCE: ${data}");
     if (data != null && mounted) {
       setState(() {
         limiteSemanal = (data['limite_semanal_recomendado'] as num).toDouble();
@@ -57,22 +58,28 @@ class _HomefinanceState extends State<Homefinance> {
 
   /// Modal que muestra la matemática explicada al usuario
   void mostrarModalDesglose(BuildContext context) {
-    if (desgloseData == null) return;
+    if (desgloseData == null) {
+      print("NO SE ENCONTRO NADA");
+      return;
+    };
+
+    // Extraemos el sub-objeto de cálculo que viene del backend
+    final desglose = desgloseData!['desglose_calculo'] ?? {};
+
+    final num disponible = desglose['disponible_bolsillos'] ?? 0;
+    final num reservaMensual = desglose['reserva_mensual_pendiente'] ?? 0;
+    final num gastoQuincenal = desglose['gasto_quincenal_pendiente'] ?? 0;
+    final num compromisos = desglose['total_compromisos'] ?? 0;
+    final num restaBruta = desglose['resta_bruta'] ?? 0;
+    final bool proteccionCero = desglose['aplica_proteccion_cero'] ?? false;
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: const Color(0xFF1E2429), // Fondo oscuro acorde a la app
+      backgroundColor: const Color(0xFF1E2429),
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        final num disponible = desgloseData!['disponible_bolsillos'] ?? 0;
-        final num reservaMensual = desgloseData!['reserva_mensual_50'] ?? 0;
-        final num reservaQuincenal = desgloseData!['gasto_quincenal_100'] ?? 0;
-        final num compromisos = desgloseData!['total_compromisos'] ?? 0;
-        final num restaBruta = desgloseData!['resta_bruta'] ?? 0;
-        final bool proteccionCero = desgloseData!['aplica_proteccion_cero'] ?? false;
-
         return Padding(
           padding: const EdgeInsets.all(20.0),
           child: Column(
@@ -96,8 +103,8 @@ class _HomefinanceState extends State<Homefinance> {
               const SizedBox(height: 10),
 
               _itemDesglose("Dinero Líquido Disponible", "+ ${formatoMoneda.format(disponible)}", Colors.greenAccent),
-              _itemDesglose("Reserva 50% Recurrentes Mensuales", "- ${formatoMoneda.format(reservaMensual)}", Colors.orangeAccent),
-              _itemDesglose("Reserva 100% Recurrentes Quincenales", "- ${formatoMoneda.format(reservaQuincenal)}", Colors.orangeAccent),
+              _itemDesglose("Provisión Mensual Pendiente (/2)", "- ${formatoMoneda.format(reservaMensual)}", Colors.orangeAccent),
+              _itemDesglose("Gastos Quincenales Pendientes", "- ${formatoMoneda.format(gastoQuincenal)}", Colors.orangeAccent),
 
               const Divider(color: Colors.white24),
               _itemDesglose("Total Compromisos Quincena", "= ${formatoMoneda.format(compromisos)}", Colors.redAccent),
@@ -129,7 +136,7 @@ class _HomefinanceState extends State<Homefinance> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      "Límite Semanal (Disponible / 2):",
+                      "Límite Semanal Recomendado:",
                       style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                     Text(
@@ -208,7 +215,7 @@ class _HomefinanceState extends State<Homefinance> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      "DINERO TOTAL DISPONIBLE",
+                      "dinero total disponible",
                       style: GoogleFonts.poppins(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -244,7 +251,7 @@ class _HomefinanceState extends State<Homefinance> {
                             Row(
                               children: [
                                 Text(
-                                  "Límite Semanal Recomendado",
+                                  "límite semanal recomendado",
                                   style: TextStyle(fontSize: 11, color: Global.sutil),
                                 ),
                                 const SizedBox(width: 4),
@@ -1101,11 +1108,16 @@ class _HomefinanceState extends State<Homefinance> {
   }
 
   Future<void> cargarResumenBalance() async {
+    setState(() => isLoadingBalance = true);
+
     final data = await getResumenBalanceApi();
-    if (data != null) {
+    print("BALANCE RECIBIDO: $data"); // 👈 Útil para depurar en consola
+
+    if (data != null && mounted) {
       setState(() {
         limiteSemanal = (data['limite_semanal_recomendado'] as num).toDouble();
         estadoFinanciero = data['estado'] ?? 'Estable';
+        desgloseData = data; // 👈 ¡ESTO ERA LO QUE FALTABA!
         isLoadingBalance = false;
       });
     } else {
