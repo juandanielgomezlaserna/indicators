@@ -48,7 +48,7 @@ Future<void> getIndicators() async {
 /**
  * Registra un nuevo indicador para el usuario autenticado
  */
-Future<void> newIndicator(String nombre, int valor) async {
+Future<void> newIndicator(String nombre, int valor, String icono) async {
   try {
     final String? token = await _storage.read(key: 'jwt_token');
 
@@ -63,6 +63,7 @@ Future<void> newIndicator(String nombre, int valor) async {
     final body = jsonEncode({
       "nombre": nombre,
       "valor": valor,
+      "icono": icono,
     });
 
     final response = await http.post(
@@ -123,7 +124,7 @@ Future<void> getIndicatorById(int id) async {
 /**
  * Actualiza un indicador existente enviando los campos modificados
  */
-Future<bool> updateIndicator(int id, {String? nombre, int? valor}) async {
+Future<bool> updateIndicator(int id, {String? nombre, int? valor, String? icono}) async {
   try {
     final String? token = await _storage.read(key: 'jwt_token');
 
@@ -138,6 +139,7 @@ Future<bool> updateIndicator(int id, {String? nombre, int? valor}) async {
     final Map<String, dynamic> dataToUpdate = {};
     if (nombre != null) dataToUpdate["nombre"] = nombre;
     if (valor != null) dataToUpdate["valor"] = valor;
+    if (icono != null) dataToUpdate["icono"] = icono;
 
     final response = await http.put(
       url,

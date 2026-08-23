@@ -87,7 +87,7 @@ class _HomeindicatorState extends State<Homeindicator> {
                               InkWell(
                                 borderRadius: BorderRadius.circular(15),
                                 onTap: () {
-                                  newIndicador();
+                                  newIndicador(context);
                                 },
                                 child: Icon(Icons.add_circle, color: Global.action, size: 50),
                               ),
@@ -125,10 +125,11 @@ class _HomeindicatorState extends State<Homeindicator> {
                                   InkWell(
                                     borderRadius: BorderRadius.circular(15),
                                     onTap: () {
-                                      editIndicador(indicator);
+                                      editIndicador(indicator, context);
                                     },
                                     child: Icon(Icons.edit, color: Global.action, size: 22),
                                   ),
+                                  Icon(Global.iconsIndicators[indicator["icono"]] ?? Icons.bubble_chart_outlined),
                                   InkWell(
                                     borderRadius: BorderRadius.circular(15),
                                     onTap: () {

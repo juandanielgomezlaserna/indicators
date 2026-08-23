@@ -10,12 +10,15 @@ import 'package:indicator/utils/widgetsApp.dart';
  * Función ágil para mostrar el modal de edición de un indicador.
  * Recibe el indicador actual para rellenar los campos por defecto.
  */
-void editIndicador(Map<String, dynamic> indicadorActual) {
+void editIndicador(Map<String, dynamic> indicadorActual, context) {
   final formKey = GlobalKey<FormState>();
 
   // Pre-cargamos los controladores con los valores existentes
   final nombreController = TextEditingController(text: indicadorActual['nombre'] ?? '');
   final valorController = TextEditingController(text: indicadorActual['valor']?.toString() ?? '0');
+  final RxString selectedIcono = "corazon".obs;
+
+  selectedIcono.value = indicadorActual["icono"] ?? "corazon";
 
   Get.dialog(
     Dialog(
@@ -60,6 +63,46 @@ void editIndicador(Map<String, dynamic> indicadorActual) {
                 style: TextStyle(color: Global.text),
                 keyboardType: TextInputType.number, // Teclado numérico
               ),
+
+              const SizedBox(height: 12),
+
+              Text(
+                "icono",
+                style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Global.text),
+              ),
+              const SizedBox(height: 10),
+
+              // --- Selector de Iconos Reactivo con Obx ---
+              Center(
+                child: SizedBox(
+                  height: 150,
+                  child: ShaderMask(
+                    shaderCallback: (Rect rect) {
+                      return const LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black,
+                          Colors.black,
+                          Colors.transparent,
+                        ],
+                        stops: [0.0, 0.75, 1.0],
+                      ).createShader(rect);
+                    },
+                    blendMode: BlendMode.dstIn,
+                    child: SingleChildScrollView(
+                      child: Obx(() => Wrap(
+                        spacing: 30,
+                        runSpacing: 10,
+                        children: Global.iconsIndicators.keys.map((String nombreKey) {
+                          return _iconCard(nombreKey, selectedIcono, context);
+                        }).toList(),
+                      )),
+                    ),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 25),
 
               // --- Botón de Acción: Actualizar ---
@@ -79,6 +122,7 @@ void editIndicador(Map<String, dynamic> indicadorActual) {
                       idIndicador,
                       nombre: nombreController.text,
                       valor: parsedValor,
+                      icono: selectedIcono.value,
                     );
 
                     Get.back(); // Cierra el modal al terminar
@@ -89,7 +133,8 @@ void editIndicador(Map<String, dynamic> indicadorActual) {
                   ),
                 ),
               ),
-              const SizedBox(height: 12),
+
+              const SizedBox(height: 10),
 
               // --- Botón de Acción: Eliminar con Confirmación ---
               SizedBox(
@@ -141,5 +186,32 @@ void editIndicador(Map<String, dynamic> indicadorActual) {
       ),
     ),
     barrierDismissible: true, // Permite cerrar tocando afuera
+  );
+}
+
+Widget _iconCard(String icon, RxString selectedIcono, BuildContext context) {
+  // Evaluamos de manera reactiva comparando el .value
+  final bool isSelected = selectedIcono.value == icon;
+
+  return GestureDetector(
+    onTap: () {
+      selectedIcono.value = icon; // Actualiza el estado reactivo al instante
+    },
+    child: Container(
+      padding: const EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: isSelected ? Global.action.withOpacity(0.2) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isSelected ? Global.action : Colors.transparent,
+          width: 1.5,
+        ),
+      ),
+      child: Icon(
+        Global.iconsIndicators[icon] ?? CupertinoIcons.heart,
+        size: 30,
+        color: isSelected ? Global.action : null,
+      ),
+    ),
   );
 }

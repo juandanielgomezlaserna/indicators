@@ -170,9 +170,9 @@ class MyController extends GetxController{
     }
   }
 
-  Future<void> newIndicadorController (nombre, valorString) async {
+  Future<void> newIndicadorController (nombre, valorString, icono) async {
     int valor = int.parse(valorString);
-    await newIndicator(nombre, valor);
+    await newIndicator(nombre, valor, icono);
   }
 
   void setMovimientos(List list) {

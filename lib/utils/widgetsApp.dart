@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 
 class Wapp{
@@ -7,8 +8,8 @@ class Wapp{
       // Textos y placeholders
       labelText: label,
       hintText: hint,
-      labelStyle: TextStyle(color: Global.text, fontWeight: FontWeight.w500),
-      hintStyle: TextStyle(color: Global.sutil.withOpacity(0.5)),
+      labelStyle: GoogleFonts.inter(color: Global.text, fontWeight: FontWeight.w500),
+      hintStyle: GoogleFonts.inter(color: Global.sutil.withOpacity(0.5)),
 
       // Icono (Opcional, ágil para formularios)
       prefixIcon: icon != null ? Icon(icon, color: Global.action) : null,
