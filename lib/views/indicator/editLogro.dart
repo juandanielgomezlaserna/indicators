@@ -104,6 +104,53 @@ void editLogro(Map<String, dynamic> logro) {
                     style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
                   ),
                 ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // --- Botón de Acción: Eliminar con Confirmación ---
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.redAccent.withOpacity(0.7), width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    // Diálogo de confirmación antes de eliminar
+                    Get.defaultDialog(
+                      backgroundColor: Global.card,
+                      title: "eliminar logro",
+                      titleStyle: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
+                      middleText: "¿estás seguro de que deseas eliminar este logro? Esta acción no se puede deshacer.",
+                      middleTextStyle: GoogleFonts.inter(color: Global.text.withOpacity(0.8), fontSize: 14),
+                      textConfirm: "sí, eliminar",
+                      textCancel: "cancelar",
+                      confirmTextColor: Colors.white,
+                      buttonColor: Colors.redAccent,
+                      cancelTextColor: Global.text,
+                      onConfirm: () async {
+                        int idLogro = logro['id'];
+
+                        // Cerramos primero el diálogo de confirmación
+                        Get.back();
+
+                        // Ejecutamos la petición de eliminación
+                        bool eliminado = await deleteLogroApi(idLogro);
+
+                        if (eliminado) {
+                          // Cerramos también el modal de edición principal si fue exitoso
+                          Get.back();
+                        }
+                      },
+                    );
+                  },
+                  child: Text(
+                    "eliminar logro",
+                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                  ),
+                ),
               )
             ],
           ),

@@ -10,6 +10,8 @@ void newLogro(int idIndicator) {
   final formKey = GlobalKey<FormState>();
   final nombreController = TextEditingController();
   final puntosController = TextEditingController();
+
+  final RxBool isLoading = false.obs;
   Get.dialog(
     Dialog(
       backgroundColor: Global.card, // Fondo oscuro para mantener tu estética
@@ -24,19 +26,9 @@ void newLogro(int idIndicator) {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // --- Cabecera del Modal ---
-              Row(
-                children: [
-                  Container(
-                    height: 20,
-                    width: 20,
-                    color: Global.action,
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    "nuevo logro",
-                    style: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
-                  ),
-                ],
+              Text(
+                "nuevo logro",
+                style: GoogleFonts.inter(color: Global.action, fontWeight: FontWeight.w600, fontSize: 25, letterSpacing: -1.5),
               ),
               const SizedBox(height: 20),
 
@@ -56,7 +48,7 @@ void newLogro(int idIndicator) {
               const SizedBox(height: 25),
 
               // --- Botón de Acción ---
-              SizedBox(
+              Obx(() => SizedBox(
                 width: double.infinity,
                 height: 50,
                 child: ElevatedButton(
@@ -64,15 +56,29 @@ void newLogro(int idIndicator) {
                     backgroundColor: Global.action,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () async {
-                    await controller.newLogroController(nombreController.text, puntosController.text, idIndicator);
+                  onPressed: isLoading.value
+                      ? null
+                      : () async {
+                    if (formKey.currentState!.validate()) {
+                      isLoading.value = true; // Bloquea y activa el loader
+                      try {
+                        await controller.newLogroController(
+                          nombreController.text.trim(),
+                          puntosController.text.trim(),
+                          idIndicator,
+                        );
+                        Get.back(); // Cierra el modal solo si se guarda con éxito
+                      } finally {
+                        isLoading.value = false; // Restaura por seguridad si ocurre un error
+                      }
+                    }
                   },
                   child: Text(
                     "guardar logro",
                     style: TextStyle(color: Global.bg, fontWeight: FontWeight.bold),
                   ),
                 ),
-              )
+              ))
             ],
           ),
         ),
