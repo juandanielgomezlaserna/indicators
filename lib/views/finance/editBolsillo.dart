@@ -4,12 +4,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/models/carteraBolsilloApi.dart';
 
-void newBolsilloModal(BuildContext context) {
-  final TextEditingController nombreController = TextEditingController();
-  final TextEditingController balanceController = TextEditingController();
+void editBolsilloModal(BuildContext context, Map<String, dynamic> bolsilloData) {
+  final TextEditingController nombreController = TextEditingController(text: bolsilloData['nombre'] ?? '');
 
-  // Variable reactiva local para controlar el tipo seleccionado en el modal
-  final RxString tipoSeleccionado = 'debito'.obs;
+  // Manejamos el balance actual como texto inicial
+  final initialBalance = bolsilloData['balance'] != null ? bolsilloData['balance'].toString() : '0';
+  final TextEditingController balanceController = TextEditingController(text: initialBalance);
+
+  // Variable reactiva local inicializada con el tipo actual del bolsillo
+  final RxString tipoSeleccionado = (bolsilloData['tipo'] as String? ?? 'debito').obs;
 
   // Estado local reactivo para manejar la carga y bloquear el botón
   final RxBool isLoading = false.obs;
@@ -47,7 +50,7 @@ void newBolsilloModal(BuildContext context) {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    "crear nuevo bolsillo",
+                    "editar bolsillo",
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -133,9 +136,9 @@ void newBolsilloModal(BuildContext context) {
               )),
               const SizedBox(height: 20),
 
-              // Campo de Saldo Inicial
+              // Campo de Saldo
               Text(
-                "saldo inicial (pesos colombianos)",
+                "saldo actual (pesos colombianos)",
                 style: TextStyle(color: Global.sutil, fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 8),
@@ -158,7 +161,7 @@ void newBolsilloModal(BuildContext context) {
               ),
               const SizedBox(height: 30),
 
-              // Botón de Guardar envuelto en Obx para control de carga y bloqueo
+              // Botón de Actualizar envuelto en Obx para control de carga y bloqueo
               Obx(() => SizedBox(
                 width: double.infinity,
                 height: 50,
@@ -180,25 +183,27 @@ void newBolsilloModal(BuildContext context) {
 
                     try {
                       double balance = double.tryParse(balanceController.text) ?? 0.0;
+                      int idBolsillo = bolsilloData['id'];
 
-                      bool creado = await createBolsillo(
+                      bool actualizado = await updateBolsillo(
+                        id: idBolsillo,
                         nombre: nombreController.text.trim(),
                         tipo: tipoSeleccionado.value,
                         balance: balance,
                       );
 
-                      if (creado) {
+                      if (actualizado) {
                         Get.back(); // Cerramos el modal
                         Get.snackbar(
                           "¡éxito!",
-                          "bolsillo creado correctamente",
+                          "bolsillo actualizado correctamente",
                           backgroundColor: Colors.green,
                           colorText: Colors.white,
                         );
                       } else {
                         Get.snackbar(
                           "error",
-                          "no se pudo crear el bolsillo. Revisa tu conexión.",
+                          "no se pudo actualizar el bolsillo. Revisa tu conexión.",
                           backgroundColor: Colors.redAccent,
                           colorText: Colors.white,
                         );
@@ -223,7 +228,7 @@ void newBolsilloModal(BuildContext context) {
                     ),
                   )
                       : Text(
-                    "crear bolsillo",
+                    "guardar cambios",
                     style: GoogleFonts.poppins(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
@@ -232,7 +237,53 @@ void newBolsilloModal(BuildContext context) {
                   ),
                 ),
               )),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
+
+              // --- Botón de Acción: Eliminar con Confirmación ---
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(color: Colors.redAccent.withOpacity(0.7), width: 1.5),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onPressed: () {
+                    // Diálogo de confirmación antes de eliminar
+                    Get.defaultDialog(
+                      backgroundColor: Global.card,
+                      title: "eliminar bolsillo",
+                      titleStyle: GoogleFonts.poppins(color: Global.text, fontWeight: FontWeight.bold, fontSize: 18),
+                      middleText: "¿estás seguro de que deseas eliminar este bolsillo? Esta acción no se puede deshacer.",
+                      middleTextStyle: GoogleFonts.inter(color: Global.text.withOpacity(0.8), fontSize: 14),
+                      textConfirm: "sí, eliminar",
+                      textCancel: "cancelar",
+                      confirmTextColor: Colors.white,
+                      buttonColor: Colors.redAccent,
+                      cancelTextColor: Global.text,
+                      onConfirm: () async {
+                        int idBolsillo = bolsilloData['id'];
+
+                        // Cerramos primero el diálogo de confirmación
+                        Get.back();
+
+                        // Ejecutamos la petición de eliminación
+                        bool eliminado = await deleteBolsillo(idBolsillo);
+
+                        if (eliminado) {
+                          // Cerramos también el modal de edición principal si fue exitoso
+                          Get.back();
+                        }
+                      },
+                    );
+                  },
+                  child: Text(
+                    "eliminar bolsillo",
+                    style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              SizedBox(height: 20,)
             ],
           ),
         ),

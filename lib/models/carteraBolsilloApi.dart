@@ -97,3 +97,96 @@ Future<bool> createBolsillo({
     return false;
   }
 }
+
+Future<bool> updateBolsillo({
+  required int id,
+  String? nombre,
+  String? tipo,
+  double? balance,
+}) async {
+  try {
+    // 1. Recuperamos el token directamente desde el Storage
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-bolsillos/$id');
+
+    // Construimos dinámicamente el mapa con solo los campos provistos
+    final Map<String, dynamic> datosAEnviar = {};
+    if (nombre != null) datosAEnviar['nombre'] = nombre;
+    if (tipo != null) datosAEnviar['tipo'] = tipo;
+    if (balance != null) datosAEnviar['balance'] = balance;
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: json.encode(datosAEnviar),
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de inmediato de forma reactiva
+        await getBolsillos();
+        return true;
+      }
+    } else {
+      print("Error al actualizar bolsillo: ${response.statusCode} - ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en updateBolsillo: $e");
+    return false;
+  }
+}
+
+/**
+ * Elimina un bolsillo existente por su ID
+ */
+Future<bool> deleteBolsillo(int id) async {
+  try {
+    // 1. Recuperamos el token directamente desde el Storage
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-bolsillos/$id');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de inmediato de forma reactiva
+        await getBolsillos();
+        return true;
+      }
+    } else {
+      print("Error al eliminar bolsillo: ${response.statusCode} - ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en deleteBolsillo: $e");
+    return false;
+  }
+}

@@ -84,6 +84,6 @@ void newLogro(int idIndicator) {
         ),
       ),
     ),
-    barrierDismissible: true, // Permite cerrar tocando afuera (buena práctica de UX)
+    barrierDismissible: true,
   );
 }

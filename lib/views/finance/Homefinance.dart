@@ -10,6 +10,7 @@ import 'package:indicator/models/carteraDeudaApi.dart';
 import 'package:indicator/models/carteraMetaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/models/carteraRecurrenteApi.dart';
+import 'package:indicator/views/finance/editBolsillo.dart';
 import 'package:indicator/views/finance/editarRecurrenteModal.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
@@ -313,28 +314,28 @@ class _HomefinanceState extends State<Homefinance> {
               children: [
                 _buildActionButton(
                   icon: Icons.add_circle_outline,
-                  label: "Nuevo Bolsillo",
+                  label: "nuevo bolsillo",
                   onTap: () {
                     newBolsilloModal(context);
                   },
                 ),
                 _buildActionButton(
                   icon: Icons.swap_horiz_rounded,
-                  label: "Transferir",
+                  label: "transferir",
                   onTap: () {
                     newTransferenciaModal(context);
                   },
                 ),
                 _buildActionButton(
                   icon: Icons.trending_down_rounded,
-                  label: "Gasto",
+                  label: "gasto",
                   onTap: () {
                     newMovimientoModal(context, tipoInicial: 'gasto');
                   },
                 ),
                 _buildActionButton(
                   icon: Icons.trending_up_rounded,
-                  label: "Ingreso",
+                  label: "ingreso",
                   onTap: () {
                     newMovimientoModal(context, tipoInicial: 'ingreso');
                   },
@@ -381,10 +382,10 @@ class _HomefinanceState extends State<Homefinance> {
                     final String tipo = bolsillo['tipo'] ?? 'debito';
                     final double balance = double.tryParse(bolsillo['balance']?.toString() ?? '0') ?? 0.0;
 
+                    // Ejemplo dentro de tu UI actual iterando la lista de bolsillos del controlador
                     return _buildBolsilloCard(
-                      nombre: nombre,
-                      tipo: tipo,
-                      balance: balance,
+                      bolsilloMap: bolsillo,
+                      context: context,
                     );
                   },
                 );
@@ -690,50 +691,65 @@ class _HomefinanceState extends State<Homefinance> {
   }
 
   // Widget Auxiliar: Tarjeta de cada bolsillo
-  Widget _buildBolsilloCard({required String nombre, required String tipo, required double balance}) {
+  Widget _buildBolsilloCard({
+    required Map<String, dynamic> bolsilloMap, // Es más práctico recibir el mapa o los datos listos
+    required BuildContext context,             // Necesitamos el context para abrir el modal
+  }) {
+    final String nombre = bolsilloMap['nombre'] ?? '';
+    final String tipo = bolsilloMap['tipo'] ?? 'debito';
+    final double balance = (bolsilloMap['balance'] is num)
+        ? (bolsilloMap['balance'] as num).toDouble()
+        : 0.0;
+
     final bool esNegativo = balance < 0;
 
-    return Container(
-      width: 150,
-      margin: const EdgeInsets.only(right: 12),
-      child: Card(
-        color: Global.card,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Icon(
+    return GestureDetector(
+      onTap: () {
+        // Al hacer clic, llamamos al modal de edición pasándole el contexto y los datos del bolsillo
+        editBolsilloModal(context, bolsilloMap);
+      },
+      child: Container(
+        width: 150,
+        margin: const EdgeInsets.only(right: 12),
+        child: Card(
+          color: Global.card,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Icon(
                   getBolsilloIcon(tipo),
                   color: esNegativo ? Colors.redAccent : Global.action,
-                  size: 28
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    nombre,
-                    style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Global.text),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    esNegativo
-                        ? "-\$${(balance.abs()).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}"
-                        : "\$${balance.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
-                    style: TextStyle(
+                  size: 28,
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      nombre,
+                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Global.text),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      esNegativo
+                          ? "-\$${(balance.abs()).toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}"
+                          : "\$${balance.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
-                        color: esNegativo ? Colors.redAccent : Global.text.withOpacity(0.9)
+                        color: esNegativo ? Colors.redAccent : Global.text.withOpacity(0.9),
+                      ),
                     ),
-                  ),
-                ],
-              )
-            ],
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
