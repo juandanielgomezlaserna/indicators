@@ -164,3 +164,98 @@ Future<bool> abonarDeudaApi({
     return false;
   }
 }
+
+/**
+ * Actualiza una deuda existente enviando los campos modificados al backend.
+ */
+Future<bool> updateDeudaApi({
+  required int deudaId,
+  String? acreedor,
+  double? montoInicial,
+  double? montoPendiente,
+  String? tipo,
+  String? fechaLimitePago,
+}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId');
+
+    // Construimos dinámicamente el body solo con los campos que no sean nulos
+    final Map<String, dynamic> data = {};
+    if (acreedor != null) data['acreedor_deudor'] = acreedor;
+    if (montoInicial != null) data['monto_inicial'] = montoInicial;
+    if (montoPendiente != null) data['monto_pendiente'] = montoPendiente;
+    if (tipo != null) data['tipo'] = tipo;
+    if (fechaLimitePago != null) data['fecha_limite_pago'] = fechaLimitePago;
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: json.encode(data),
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de deudas para reflejar los cambios en la UI
+        await getDeudasApi();
+        return true;
+      }
+    } else {
+      print("Error al actualizar deuda: ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en updateDeudaApi: $e");
+    return false;
+  }
+}
+
+Future<bool> deleteDeudaApi({required int deudaId}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de deudas para actualizar la interfaz
+        await getDeudasApi();
+        return true;
+      }
+    } else {
+      print("Error al eliminar deuda: ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en deleteDeudaApi: $e");
+    return false;
+  }
+}

@@ -11,6 +11,7 @@ import 'package:indicator/models/carteraMetaApi.dart';
 import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/models/carteraRecurrenteApi.dart';
 import 'package:indicator/views/finance/editBolsillo.dart';
+import 'package:indicator/views/finance/editDeuda.dart';
 import 'package:indicator/views/finance/editarRecurrenteModal.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
@@ -767,72 +768,78 @@ class _HomefinanceState extends State<Homefinance> {
     final double pagado = montoInicial - montoPendiente;
     final double porcentaje = montoInicial > 0 ? (pagado / montoInicial).clamp(0.0, 1.0) : 0.0;
 
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 12),
-      child: Card(
-        color: Global.card,
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      acreedor,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      abonarDeudaModal(context, deudaId: id, acreedor: acreedor, montoPendiente: montoPendiente);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Global.action.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+    return InkWell(
+      onTap: (){
+        editarDeudaModal(context, deudaId: id, acreedorActual: acreedor, montoInicialActual: montoInicial, montoPendienteActual: montoPendiente);
+      },
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(right: 12),
+        child: Card(
+          color: Global.card,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
                       child: Text(
-                        "Abonar",
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.action),
+                        acreedor,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  )
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    "Pendiente:",
-                    style: TextStyle(fontSize: 10, color: Global.sutil),
-                  ),
-                  Text(
-                    "\$${montoPendiente.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
-                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.redAccent),
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: porcentaje,
-                      backgroundColor: Global.bg,
-                      color: Global.action,
-                      minHeight: 6,
+                    InkWell(
+                      onTap: () {
+                        abonarDeudaModal(context, deudaId: id, acreedor: acreedor, montoPendiente: montoPendiente);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Global.action.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          "Abonar",
+                          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Global.action),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "Pendiente:",
+                      style: TextStyle(fontSize: 10, color: Global.sutil),
                     ),
-                  ),
-                ],
-              )
-            ],
+                    Text(
+                      "\$${montoPendiente.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold, color: Colors.redAccent),
+                    ),
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: porcentaje,
+                        backgroundColor: Global.bg,
+                        color: Global.action,
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),
