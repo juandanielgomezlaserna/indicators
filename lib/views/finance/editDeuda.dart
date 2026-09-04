@@ -11,6 +11,7 @@ void editarDeudaModal(
       required double montoInicialActual,
       required double montoPendienteActual,
       String tipoActual = 'cobrar',
+      int? bolsilloIdActual,
     }) {
   final acreedorController = TextEditingController(text: acreedorActual);
   final montoInicialController = TextEditingController(
@@ -21,6 +22,11 @@ void editarDeudaModal(
   );
 
   String tipoSeleccionado = tipoActual;
+
+  // Inicializamos con el bolsillo actual o el primero disponible si existe
+  int? bolsilloSeleccionado = bolsilloIdActual ?? (controller.bolsillos.isNotEmpty
+      ? int.tryParse(controller.bolsillos.first['id']?.toString() ?? '')
+      : null);
 
   showModalBottomSheet(
     context: context,
@@ -56,7 +62,7 @@ void editarDeudaModal(
                   controller: acreedorController,
                   style: TextStyle(color: Global.text),
                   decoration: InputDecoration(
-                    labelText: "Acreedor",
+                    labelText: "Acreedor / Deudor",
                     labelStyle: TextStyle(color: Global.sutil),
                     enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: Global.sutil),
@@ -116,9 +122,9 @@ void editarDeudaModal(
                   items: const [
                     DropdownMenuItem(
                       value: 'cobrar',
-                      child: Text('Por Cobrar'),
+                      child: Text('Por Cobrar (Me deben)'),
                     ),
-                    DropdownMenuItem(value: 'pagar', child: Text('Por Pagar')),
+                    DropdownMenuItem(value: 'pagar', child: Text('Por Pagar (Debo)')),
                     DropdownMenuItem(
                       value: 'no_obligatoria',
                       child: Text('No Obligatoria'),
@@ -129,6 +135,25 @@ void editarDeudaModal(
                       setState(() => tipoSeleccionado = val);
                     }
                   },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int>(
+                  value: bolsilloSeleccionado,
+                  dropdownColor: Global.card,
+                  style: TextStyle(color: Global.text),
+                  decoration: InputDecoration(
+                    labelText: "Bolsillo Asociado (Opcional)",
+                    labelStyle: TextStyle(color: Global.sutil),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
+                  ),
+                  items: controller.bolsillos.map<DropdownMenuItem<int>>((b) {
+                    final id = int.parse(b['id'].toString());
+                    return DropdownMenuItem<int>(
+                      value: id,
+                      child: Text("${b['nombre']} (\$${b['balance']})"),
+                    );
+                  }).toList(),
+                  onChanged: (val) => setState(() => bolsilloSeleccionado = val),
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -157,6 +182,7 @@ void editarDeudaModal(
                           montoInicial: montoInicial,
                           montoPendiente: montoPendiente,
                           tipo: tipoSeleccionado,
+                          bolsilloId: bolsilloSeleccionado, // <--- Enviamos el ID del bolsillo seleccionado
                         );
                         if (ok && context.mounted) {
                           Navigator.pop(context);

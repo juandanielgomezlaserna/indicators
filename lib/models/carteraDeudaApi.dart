@@ -52,12 +52,16 @@ Future<void> getDeudasApi() async {
 /**
  * Registra una nueva deuda (acreedor, monto inicial y saldo pendiente)
  */
+/**
+ * Registra una nueva deuda (acreedor, monto inicial, saldo pendiente y opcionalmente un bolsillo)
+ */
 Future<bool> createDeudaApi({
   required String acreedor,
   required double montoInicial,
   double? montoPendiente,
   String tipo = 'cobrar',
   String? fechaLimitePago,
+  int? bolsilloId, // <--- Nuevo parámetro opcional para vincular el bolsillo
 }) async {
   try {
     final String? token = await _storage.read(key: 'jwt_token');
@@ -67,16 +71,22 @@ Future<bool> createDeudaApi({
       return false;
     }
 
+    print("ID DEL BOLSILLO: $bolsilloId");
+
     final url = Uri.parse('${Global.baseUrl}cartera-deudas');
 
-    // No enviamos 'usuario': el ID proviene del token firmado
-    final body = json.encode({
+    // Construimos el body incluyendo el bolsillo_id si el usuario lo seleccionó
+    final Map<String, dynamic> bodyData = {
       'acreedor_deudor': acreedor,
       'monto_total': montoInicial,
       'monto_pendiente': montoPendiente ?? montoInicial,
       'tipo': tipo,
       'fecha_limite_pago': fechaLimitePago,
-    });
+    };
+
+    if (bolsilloId != null) {
+      bodyData['bolsillo_id'] = bolsilloId;
+    }
 
     final response = await http.post(
       url,
@@ -85,15 +95,18 @@ Future<bool> createDeudaApi({
         'Authorization': 'Bearer $token',
         'ngrok-skip-browser-warning': 'true',
       },
-      body: body,
+      body: json.encode(bodyData),
     );
 
     if (response.statusCode == 201 || response.statusCode == 200) {
       final decodedData = json.decode(response.body);
 
       if (decodedData['status'] == 'success') {
-        // Refrescamos la lista de deudas para actualizar la UI en Flutter
+        // Al crear una deuda que afecta un bolsillo, refrescamos ambos estados en la UI
         await getDeudasApi();
+        if (bolsilloId != null) {
+          await getBolsillos(); // Asegúrate de tener esta función importada para refrescar saldos
+        }
         return true;
       }
     } else {
@@ -175,6 +188,7 @@ Future<bool> updateDeudaApi({
   double? montoPendiente,
   String? tipo,
   String? fechaLimitePago,
+  int? bolsilloId, // <--- Añadir soporte para edición de bolsillo
 }) async {
   try {
     final String? token = await _storage.read(key: 'jwt_token');
@@ -186,13 +200,13 @@ Future<bool> updateDeudaApi({
 
     final url = Uri.parse('${Global.baseUrl}cartera-deudas/$deudaId');
 
-    // Construimos dinámicamente el body solo con los campos que no sean nulos
     final Map<String, dynamic> data = {};
     if (acreedor != null) data['acreedor_deudor'] = acreedor;
     if (montoInicial != null) data['monto_inicial'] = montoInicial;
     if (montoPendiente != null) data['monto_pendiente'] = montoPendiente;
     if (tipo != null) data['tipo'] = tipo;
     if (fechaLimitePago != null) data['fecha_limite_pago'] = fechaLimitePago;
+    if (bolsilloId != null) data['bolsillo_id'] = bolsilloId; // <--- Incluir en el payload si viene informado
 
     final response = await http.put(
       url,
@@ -208,7 +222,6 @@ Future<bool> updateDeudaApi({
       final decodedData = json.decode(response.body);
 
       if (decodedData['status'] == 'success') {
-        // Refrescamos la lista de deudas para reflejar los cambios en la UI
         await getDeudasApi();
         return true;
       }

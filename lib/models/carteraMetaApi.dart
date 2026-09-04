@@ -65,6 +65,8 @@ Future<bool> createMetaApi({
       return false;
     }
 
+    print("BOLSILLO ID: $bolsilloOrigenId");
+
     final url = Uri.parse('${Global.baseUrl}cartera-metas');
 
     // No enviamos 'usuario': el ID proviene del token firmado en el backend
@@ -154,6 +156,104 @@ Future<bool> depositarAMetaApi({
     return false;
   } catch (e) {
     print("Error de conexión en depositarAMetaApi: $e");
+    return false;
+  }
+}
+
+/**
+ * Actualiza una meta de ahorro existente en el backend mediante su ID.
+ */
+Future<bool> updateMetaApi({
+  required int metaId,
+  String? nombre,
+  double? montoObjetivo,
+  double? montoActual,
+  bool? completado,
+  int? bolsilloOrigenId,
+}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-metas/$metaId');
+
+    // Construimos dinámicamente el body solo con los campos que no sean nulos
+    final Map<String, dynamic> data = {};
+    if (nombre != null) data['nombre'] = nombre;
+    if (montoObjetivo != null) data['monto_objetivo'] = montoObjetivo;
+    if (montoActual != null) data['monto_actual'] = montoActual;
+    if (completado != null) data['completado'] = completado;
+    if (bolsilloOrigenId != null) data['bolsillo_origen_id'] = bolsilloOrigenId;
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+      body: json.encode(data),
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de metas para reflejar los cambios en la UI
+        await getMetasApi();
+        return true;
+      }
+    } else {
+      print("Error al actualizar meta: ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en updateMetaApi: $e");
+    return false;
+  }
+}
+
+/**
+ * Elimina una meta de ahorro existente en el backend mediante su ID.
+ */
+Future<bool> deleteMetaApi({required int metaId}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-metas/$metaId');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de metas para actualizar la interfaz
+        await getMetasApi();
+        return true;
+      }
+    } else {
+      print("Error al eliminar meta: ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en deleteMetaApi: $e");
     return false;
   }
 }

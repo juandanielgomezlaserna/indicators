@@ -12,6 +12,7 @@ import 'package:indicator/models/carteraMovimientoApi.dart';
 import 'package:indicator/models/carteraRecurrenteApi.dart';
 import 'package:indicator/views/finance/editBolsillo.dart';
 import 'package:indicator/views/finance/editDeuda.dart';
+import 'package:indicator/views/finance/editMeta.dart';
 import 'package:indicator/views/finance/editarRecurrenteModal.dart';
 import 'package:indicator/views/finance/newBolsillo.dart';
 import 'package:indicator/views/finance/newDeuda.dart';
@@ -502,6 +503,7 @@ class _HomefinanceState extends State<Homefinance> {
                     final meta = controller.metas[index];
 
                     final int id = int.tryParse(meta['id']?.toString() ?? '0') ?? 0;
+                    final int idBolsillo = int.tryParse(meta['bolsillo_origen_id']?.toString() ?? '0') ?? 0;
                     final String nombre = meta['nombre'] ?? 'Sin Nombre';
                     final double montoObjetivo = double.tryParse(meta['monto_objetivo']?.toString() ?? '0') ?? 0.0;
                     final double montoActual = double.tryParse(meta['monto_actual']?.toString() ?? '0') ?? 0.0;
@@ -511,6 +513,7 @@ class _HomefinanceState extends State<Homefinance> {
                       nombre: nombre,
                       montoObjetivo: montoObjetivo,
                       montoActual: montoActual,
+                      bolsilloOrigenId: idBolsillo
                     );
                   },
                 );
@@ -852,6 +855,7 @@ class _HomefinanceState extends State<Homefinance> {
     required String nombre,
     required double montoObjetivo,
     required double montoActual,
+    int? bolsilloOrigenId, // Opcional si lo tienes disponible en el modelo
   }) {
     // Cálculo del porcentaje del avance (de 0.0 a 1.0)
     final double porcentaje = montoObjetivo > 0 ? (montoActual / montoObjetivo).clamp(0.0, 1.0) : 0.0;
@@ -864,94 +868,109 @@ class _HomefinanceState extends State<Homefinance> {
         color: Global.card,
         elevation: 2,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    child: Text(
-                      nombre,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  InkWell(
-                    onTap: () {
-                      depositarMetaModal(
-                        context,
-                        metaId: id,
-                        nombreMeta: nombre,
-                        montoObjetivo: montoObjetivo,
-                        montoActual: montoActual,
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: completado
-                            ? Colors.green.withOpacity(0.15)
-                            : Global.action.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: () {
+            // Abre el modal de edición/eliminación al hacer tap en la tarjeta
+            editarMetaModal(
+              context,
+              metaId: id,
+              nombreActual: nombre,
+              montoObjetivoActual: montoObjetivo,
+              montoActualActual: montoActual,
+              bolsilloOrigenIdActual: bolsilloOrigenId,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
                       child: Text(
-                        completado ? "¡Logrado!" : "Abonar",
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: completado ? Colors.green : Global.action,
-                        ),
+                        nombre,
+                        style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Global.text),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  )
-                ],
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Ahorrado:",
-                        style: TextStyle(fontSize: 10, color: Global.sutil),
-                      ),
-                      Text(
-                        "${(porcentaje * 100).toStringAsFixed(0)}%",
-                        style: TextStyle(
+                    InkWell(
+                      onTap: () {
+                        depositarMetaModal(
+                          context,
+                          metaId: id,
+                          nombreMeta: nombre,
+                          montoObjetivo: montoObjetivo,
+                          montoActual: montoActual,
+                          bolsilloOrigenIdActual: bolsilloOrigenId
+                        );
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: completado
+                              ? Colors.green.withOpacity(0.15)
+                              : Global.action.withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          completado ? "¡Logrado!" : "Abonar",
+                          style: TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
-                            color: completado ? Colors.green : Global.action
+                            color: completado ? Colors.green : Global.action,
+                          ),
                         ),
                       ),
-                    ],
-                  ),
-                  Text(
-                    "\$${montoActual.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} / \$${montoObjetivo.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
-                    style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: completado ? Colors.green : Global.text
+                    )
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Ahorrado:",
+                          style: TextStyle(fontSize: 10, color: Global.sutil),
+                        ),
+                        Text(
+                          "${(porcentaje * 100).toStringAsFixed(0)}%",
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: completado ? Colors.green : Global.action
+                          ),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: LinearProgressIndicator(
-                      value: porcentaje,
-                      backgroundColor: Global.bg,
-                      color: completado ? Colors.green : Global.action,
-                      minHeight: 6,
+                    Text(
+                      "\$${montoActual.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')} / \$${montoObjetivo.toStringAsFixed(0).replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]}.')}",
+                      style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: completado ? Colors.green : Global.text
+                      ),
                     ),
-                  ),
-                ],
-              )
-            ],
+                    const SizedBox(height: 6),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: LinearProgressIndicator(
+                        value: porcentaje,
+                        backgroundColor: Global.bg,
+                        color: completado ? Colors.green : Global.action,
+                        minHeight: 6,
+                      ),
+                    ),
+                  ],
+                )
+              ],
+            ),
           ),
         ),
       ),

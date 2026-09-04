@@ -8,6 +8,13 @@ void newMetaModal(BuildContext context) {
   final nombreController = TextEditingController();
   final montoObjetivoController = TextEditingController();
 
+  // Inicializamos de forma segura el primer bolsillo origen si existe
+  int? bolsilloOrigenId;
+  if (controller.bolsillos.isNotEmpty) {
+    final firstId = controller.bolsillos.first['id'];
+    bolsilloOrigenId = firstId != null ? int.tryParse(firstId.toString()) : null;
+  }
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -16,80 +23,125 @@ void newMetaModal(BuildContext context) {
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (context) {
-      return Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-          top: 20,
-          left: 20,
-          right: 20,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              "Nueva Meta de Ahorro",
-              style: TextStyle(color: Global.text, fontSize: 18, fontWeight: FontWeight.bold),
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+              top: 20,
+              left: 20,
+              right: 20,
             ),
-            const SizedBox(height: 15),
-            TextField(
-              controller: nombreController,
-              style: TextStyle(color: Global.text),
-              decoration: InputDecoration(
-                labelText: "Nombre del objetivo (Ej. Teclado, Viaje)",
-                labelStyle: TextStyle(color: Global.sutil),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
-              ),
-            ),
-            const SizedBox(height: 12),
-            TextField(
-              controller: montoObjetivoController,
-              keyboardType: TextInputType.number,
-              style: TextStyle(color: Global.text),
-              decoration: InputDecoration(
-                labelText: "Monto Objetivo (\$)",
-                labelStyle: TextStyle(color: Global.sutil),
-                enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
-                focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
-              ),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Global.action,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Nueva Meta de Ahorro",
+                  style: TextStyle(color: Global.text, fontSize: 18, fontWeight: FontWeight.bold),
                 ),
-                onPressed: () async {
-                  final nombre = nombreController.text.trim();
-                  final monto = double.tryParse(montoObjetivoController.text) ?? 0;
+                const SizedBox(height: 15),
+                TextField(
+                  controller: nombreController,
+                  style: TextStyle(color: Global.text),
+                  decoration: InputDecoration(
+                    labelText: "Nombre del objetivo (Ej. Teclado, Viaje)",
+                    labelStyle: TextStyle(color: Global.sutil),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: montoObjetivoController,
+                  keyboardType: TextInputType.number,
+                  style: TextStyle(color: Global.text),
+                  decoration: InputDecoration(
+                    labelText: "Monto Objetivo (\$)",
+                    labelStyle: TextStyle(color: Global.sutil),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<int?>(
+                  value: bolsilloOrigenId,
+                  dropdownColor: Global.card,
+                  style: TextStyle(color: Global.text),
+                  decoration: InputDecoration(
+                    labelText: "Bolsillo de Origen (Opcional)",
+                    labelStyle: TextStyle(color: Global.sutil),
+                    enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
+                  ),
+                  items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text("Ninguno"),
+                    ),
+                    ...controller.bolsillos.map<DropdownMenuItem<int?>>((b) {
+                      final id = int.parse(b['id'].toString());
+                      return DropdownMenuItem<int?>(
+                        value: id,
+                        child: Text("${b['nombre']} (\$${b['balance']})"),
+                      );
+                    }),
+                  ],
+                  onChanged: (val) => setState(() => bolsilloOrigenId = val),
+                ),
+                const SizedBox(height: 20),
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Global.action,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    onPressed: () async {
+                      final nombre = nombreController.text.trim();
+                      final monto = double.tryParse(montoObjetivoController.text) ?? 0;
 
-                  if (nombre.isNotEmpty && monto > 0) {
-                    final ok = await createMetaApi(nombre: nombre, montoObjetivo: monto);
-                    if (ok && context.mounted) {
-                      Navigator.pop(context);
-                    }
-                  }
-                },
-                child: const Text("Guardar Meta", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-              ),
-            )
-          ],
-        ),
+                      if (nombre.isNotEmpty && monto > 0) {
+                        final ok = await createMetaApi(
+                          nombre: nombre,
+                          montoObjetivo: monto,
+                          bolsilloOrigenId: bolsilloOrigenId,
+                        );
+                        if (ok && context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      }
+                    },
+                    child: const Text("Guardar Meta", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                  ),
+                )
+              ],
+            ),
+          );
+        },
       );
     },
   );
 }
 
 /// Modal para realizar un depósito a la meta de ahorro
-void depositarMetaModal(BuildContext context, {required int metaId, required String nombreMeta, required double montoObjetivo, required double montoActual}) {
+/// Modal para realizar un depósito a la meta de ahorro
+void depositarMetaModal(
+    BuildContext context, {
+      required int metaId,
+      required String nombreMeta,
+      required double montoObjetivo,
+      required double montoActual,
+      Object? bolsilloOrigenIdActual, // 👈 1. Recibimos el bolsillo asociado a la meta
+    }) {
   final montoController = TextEditingController();
-  int? bolsilloSeleccionado = controller.bolsillos.isNotEmpty
+
+  // 👈 2. Priorizamos el bolsillo de la meta, si no tiene, usamos el primero disponible o null
+  int? bolsilloSeleccionado = bolsilloOrigenIdActual != null
+      ? int.tryParse(bolsilloOrigenIdActual.toString())
+      : (controller.bolsillos.isNotEmpty
       ? int.tryParse(controller.bolsillos.first['id']?.toString() ?? '')
-      : null;
+      : null);
 
   showModalBottomSheet(
     context: context,
@@ -121,7 +173,7 @@ void depositarMetaModal(BuildContext context, {required int metaId, required Str
                   style: TextStyle(color: Global.sutil, fontSize: 12),
                 ),
                 const SizedBox(height: 15),
-                DropdownButtonFormField<int>(
+                DropdownButtonFormField<int?>(
                   value: bolsilloSeleccionado,
                   dropdownColor: Global.card,
                   style: TextStyle(color: Global.text),
@@ -130,13 +182,19 @@ void depositarMetaModal(BuildContext context, {required int metaId, required Str
                     labelStyle: TextStyle(color: Global.sutil),
                     enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
                   ),
-                  items: controller.bolsillos.map<DropdownMenuItem<int>>((b) {
-                    final id = int.parse(b['id'].toString());
-                    return DropdownMenuItem<int>(
-                      value: id,
-                      child: Text("${b['nombre']} (\$${b['balance']})"),
-                    );
-                  }).toList(),
+                  items: [
+                    const DropdownMenuItem<int?>(
+                      value: null,
+                      child: Text("Ninguno"),
+                    ),
+                    ...controller.bolsillos.map<DropdownMenuItem<int?>>((b) {
+                      final id = int.parse(b['id'].toString());
+                      return DropdownMenuItem<int?>(
+                        value: id,
+                        child: Text("${b['nombre']} (\$${b['balance']})"),
+                      );
+                    }),
+                  ],
                   onChanged: (val) => setState(() => bolsilloSeleccionado = val),
                 ),
                 const SizedBox(height: 12),
