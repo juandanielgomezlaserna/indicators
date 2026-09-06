@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:indicator/main.dart';
 import 'package:intl/intl.dart';
 
 class EditarRecurrenteModal extends StatefulWidget {
   final Map<String, dynamic> recurrente;
   final Function(Map<String, dynamic> datosActualizados) onGuardar;
+  final Function(dynamic id)? onEliminar;
 
   const EditarRecurrenteModal({
     Key? key,
     required this.recurrente,
     required this.onGuardar,
+    this.onEliminar,
   }) : super(key: key);
 
   @override
@@ -23,7 +26,6 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
   late TextEditingController _montoController;
 
   late String _frecuenciaSeleccionada;
-  late String _categoriaSeleccionada;
   late DateTime _proximaEjecucion;
   int? _bolsilloIdSeleccionado;
   late bool _activo;
@@ -31,30 +33,27 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
   final List<String> _frecuencias = ['diario', 'semanal', 'quincenal', 'mensual', 'anual'];
   final List<String> _categorias = ['Vivienda', 'Suscripciones', 'Servicios', 'Alimentación', 'Educación', 'Otros'];
 
-  // Simulación de lista de bolsillos (Ajustar según tu Controller/State)
-  final List<Map<String, dynamic>> _bolsillosDisponibles = [
-    {'id': 1, 'nombre': 'Alcancía'},
-    {'id': 2, 'nombre': 'Ahorros'},
-    {'id': 3, 'nombre': 'Efectivo'},
-  ];
+  List get _bolsillosDisponibles {
+    return controller.bolsillos.value;
+  }
 
   @override
   void initState() {
     super.initState();
-    _descripcionController = TextEditingController(text: widget.recurrente['descripcion'] ?? '');
+    _descripcionController = TextEditingController(text: widget.recurrente['categoria'] ?? '');
     _montoController = TextEditingController(text: widget.recurrente['monto']?.toString() ?? '0');
 
     _frecuenciaSeleccionada = _frecuencias.firstWhere(
           (f) => f.toLowerCase() == (widget.recurrente['frecuencia'] ?? '').toString().toLowerCase(),
-      orElse: () => 'Mensual',
+      orElse: () => 'mensual',
     );
 
-    _categoriaSeleccionada = _categorias.contains(widget.recurrente['categoria'])
-        ? widget.recurrente['categoria']
-        : 'Otros';
-
     _proximaEjecucion = DateTime.tryParse(widget.recurrente['proxima_ejecucion'] ?? '') ?? DateTime.now();
-    _bolsilloIdSeleccionado = widget.recurrente['bolsillo_id'];
+
+    // Parseo seguro del ID del bolsillo
+    final rawBolsilloId = widget.recurrente['bolsillo_id'];
+    _bolsilloIdSeleccionado = rawBolsilloId != null ? int.tryParse(rawBolsilloId.toString()) : null;
+
     _activo = widget.recurrente['activo'] ?? true;
   }
 
@@ -92,6 +91,38 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
     }
   }
 
+  void _confirmarEliminacion(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFF161C24),
+          title: const Text("Eliminar Recurrente", style: TextStyle(color: Colors.white)),
+          content: const Text(
+            "¿Estás seguro de que deseas eliminar esta transacción recurrente? Esta acción no se puede deshacer.",
+            style: TextStyle(color: Colors.grey, fontSize: 13),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text("Cancelar", style: TextStyle(color: Colors.grey)),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Cierra el diálogo de alerta
+                if (widget.onEliminar != null) {
+                  widget.onEliminar!(widget.recurrente['id']);
+                }
+                Get.back(); // Cierra el modal principal de edición
+              },
+              child: const Text("Eliminar", style: TextStyle(color: Colors.redAccent, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final String fechaFormateada = DateFormat('yyyy-MM-dd').format(_proximaEjecucion);
@@ -114,7 +145,7 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Cabecera del Modal
+              // Cabecera del Modal con Botón de Borrar
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -122,15 +153,25 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
                     "Editar Recurrente",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.grey),
-                    onPressed: () => Get.back(),
+                  Row(
+                    children: [
+                      // Botón de eliminar en la esquina superior
+                      IconButton(
+                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent),
+                        onPressed: () => _confirmarEliminacion(context),
+                        tooltip: "Eliminar",
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () => Get.back(),
+                      ),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 16),
 
-              // Campo: Descripción
+              // Campo: Descripción / Categoría
               TextFormField(
                 controller: _descripcionController,
                 style: const TextStyle(color: Colors.white),
@@ -153,31 +194,13 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
               ),
               const SizedBox(height: 12),
 
-              // Fila: Frecuencia y Categoría
-              Row(
-                children: [
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _frecuenciaSeleccionada,
-                      dropdownColor: const Color(0xFF1E2630),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      decoration: _inputDecoration("Frecuencia", Icons.update_rounded),
-                      items: _frecuencias.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
-                      onChanged: (val) => setState(() => _frecuenciaSeleccionada = val!),
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: DropdownButtonFormField<String>(
-                      value: _categoriaSeleccionada,
-                      dropdownColor: const Color(0xFF1E2630),
-                      style: const TextStyle(color: Colors.white, fontSize: 13),
-                      decoration: _inputDecoration("Categoría", Icons.category_rounded),
-                      items: _categorias.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-                      onChanged: (val) => setState(() => _categoriaSeleccionada = val!),
-                    ),
-                  ),
-                ],
+              DropdownButtonFormField<String>(
+                value: _frecuenciaSeleccionada,
+                dropdownColor: const Color(0xFF1E2630),
+                style: const TextStyle(color: Colors.white, fontSize: 13),
+                decoration: _inputDecoration("Frecuencia", Icons.update_rounded),
+                items: _frecuencias.map((f) => DropdownMenuItem(value: f, child: Text(f))).toList(),
+                onChanged: (val) => setState(() => _frecuenciaSeleccionada = val!),
               ),
               const SizedBox(height: 12),
 
@@ -187,9 +210,10 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
                 dropdownColor: const Color(0xFF1E2630),
                 style: const TextStyle(color: Colors.white, fontSize: 13),
                 decoration: _inputDecoration("Bolsillo Afectado", Icons.account_balance_wallet_rounded),
-                items: _bolsillosDisponibles.map((b) {
+                items: _bolsillosDisponibles.map<DropdownMenuItem<int>>((b) {
+                  final idBolsillo = int.parse(b['id'].toString());
                   return DropdownMenuItem<int>(
-                    value: b['id'] as int,
+                    value: idBolsillo,
                     child: Text(b['nombre'].toString()),
                   );
                 }).toList(),
@@ -253,10 +277,9 @@ class _EditarRecurrenteModalState extends State<EditarRecurrenteModal> {
                     if (_formKey.currentState!.validate()) {
                       final datosEditados = {
                         'id': widget.recurrente['id'],
-                        'descripcion': _descripcionController.text.trim(),
                         'monto': double.parse(_montoController.text.trim()),
                         'frecuencia': _frecuenciaSeleccionada,
-                        'categoria': _categoriaSeleccionada,
+                        'categoria': _descripcionController.text,
                         'bolsillo_id': _bolsilloIdSeleccionado,
                         'proxima_ejecucion': fechaFormateada,
                         'activo': _activo,

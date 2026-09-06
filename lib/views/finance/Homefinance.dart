@@ -565,7 +565,7 @@ class _HomefinanceState extends State<Homefinance> {
                   itemCount: controller.recurrentes.length,
                   itemBuilder: (context, index) {
                     final item = controller.recurrentes[index];
-                    final String descripcion = item['descripcion'] ?? 'Sin Nombre';
+                    final String descripcion = item['categoria'] ?? 'Sin Nombre';
                     final String tipo = item['tipo'] ?? 'gasto';
                     final double monto = double.tryParse(item['monto']?.toString() ?? '0') ?? 0.0;
                     final String frecuencia = item['frecuencia'] ?? 'mensual';
@@ -1113,10 +1113,8 @@ class _HomefinanceState extends State<Homefinance> {
       builder: (context) => EditarRecurrenteModal(
         recurrente: item,
         onGuardar: (datosEditados) async {
-          // 👈 Pasamos los parámetros de forma nombrada extrayéndolos del mapa
           bool exito = await editarRecurrenteApi(
             id: datosEditados['id'],
-            descripcion: datosEditados['descripcion'],
             monto: datosEditados['monto'],
             frecuencia: datosEditados['frecuencia'],
             categoria: datosEditados['categoria'],
@@ -1126,7 +1124,7 @@ class _HomefinanceState extends State<Homefinance> {
           );
 
           if (exito) {
-            await getRecurrentesApi(); // Refresca la lista desde el servidor
+            await getRecurrentesApi();
 
             Get.snackbar(
               "Suscripción Actualizada",
@@ -1139,6 +1137,30 @@ class _HomefinanceState extends State<Homefinance> {
             Get.snackbar(
               "Error",
               "No se pudieron actualizar los datos",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+          }
+        },
+        // 🟢 Implementación del callback onEliminar conectado al backend
+        onEliminar: (id) async {
+          bool exito = await deleteRecurrenteApi(recurrenteId: id);
+
+          if (exito) {
+            await getRecurrentesApi(); // Refresca la lista desde el servidor
+
+            Get.snackbar(
+              "Suscripción Eliminada",
+              "El registro recurrente ha sido borrado exitosamente",
+              snackPosition: SnackPosition.BOTTOM,
+              backgroundColor: Colors.redAccent,
+              colorText: Colors.white,
+            );
+          } else {
+            Get.snackbar(
+              "Error",
+              "No se pudo eliminar la transacción recurrente",
               snackPosition: SnackPosition.BOTTOM,
               backgroundColor: Colors.redAccent,
               colorText: Colors.white,

@@ -7,8 +7,6 @@ import 'package:indicator/models/carteraRecurrenteApi.dart';
 void newRecurrenteModal(BuildContext context) {
   final descripcionController = TextEditingController();
   final montoController = TextEditingController();
-  final categoriaController = TextEditingController();
-
   String tipoSeleccionado = 'gasto';
   String frecuenciaSeleccionada = 'mensual';
 
@@ -102,35 +100,16 @@ void newRecurrenteModal(BuildContext context) {
                   const SizedBox(height: 12),
 
                   // Monto y Categoría
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          controller: montoController,
-                          keyboardType: TextInputType.number,
-                          style: TextStyle(color: Global.text),
-                          decoration: InputDecoration(
-                            labelText: "Monto (\$)",
-                            labelStyle: TextStyle(color: Global.sutil),
-                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
-                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          controller: categoriaController,
-                          style: TextStyle(color: Global.text),
-                          decoration: InputDecoration(
-                            labelText: "Categoría",
-                            labelStyle: TextStyle(color: Global.sutil),
-                            enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
-                            focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
-                          ),
-                        ),
-                      ),
-                    ],
+                  TextField(
+                    controller: montoController,
+                    keyboardType: TextInputType.number,
+                    style: TextStyle(color: Global.text),
+                    decoration: InputDecoration(
+                      labelText: "Monto (\$)",
+                      labelStyle: TextStyle(color: Global.sutil),
+                      enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.sutil)),
+                      focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Global.action)),
+                    ),
                   ),
                   const SizedBox(height: 12),
 
@@ -223,15 +202,13 @@ void newRecurrenteModal(BuildContext context) {
                       onPressed: () async {
                         final desc = descripcionController.text.trim();
                         final monto = double.tryParse(montoController.text) ?? 0;
-                        final cat = categoriaController.text.trim();
                         final fechaStr = "${fechaProxima.year}-${fechaProxima.month.toString().padLeft(2, '0')}-${fechaProxima.day.toString().padLeft(2, '0')}";
 
-                        if (desc.isNotEmpty && monto > 0 && cat.isNotEmpty && bolsilloSeleccionado != null) {
+                        if (desc.isNotEmpty && monto > 0 && desc.isNotEmpty && bolsilloSeleccionado != null) {
                           final ok = await createRecurrenteApi(
-                            descripcion: desc,
                             monto: monto,
                             tipo: tipoSeleccionado,
-                            categoria: cat,
+                            categoria: desc,
                             frecuencia: frecuenciaSeleccionada,
                             bolsilloId: bolsilloSeleccionado!,
                             proximaEjecucion: fechaStr,

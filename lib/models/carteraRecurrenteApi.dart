@@ -50,7 +50,6 @@ Future<void> getRecurrentesApi() async {
  * Crear una nueva transacción recurrente para el usuario autenticado
  */
 Future<bool> createRecurrenteApi({
-  required String descripcion,
   required double monto,
   required String tipo,
   required String categoria,
@@ -70,7 +69,6 @@ Future<bool> createRecurrenteApi({
     final url = Uri.parse('${Global.baseUrl}cartera-recurrentes');
 
     final body = json.encode({
-      'descripcion': descripcion,
       'monto': monto,
       'tipo': tipo,
       'categoria': categoria,
@@ -156,7 +154,6 @@ Future<bool> ejecutarRecurrenteApi(int id) async {
  */
 Future<bool> editarRecurrenteApi({
   required int id,
-  String? descripcion,
   double? monto,
   String? categoria,
   String? frecuencia,
@@ -176,7 +173,6 @@ Future<bool> editarRecurrenteApi({
 
     final Map<String, dynamic> body = {};
 
-    if (descripcion != null && descripcion.isNotEmpty) body['descripcion'] = descripcion;
     if (monto != null) body['monto'] = monto;
     if (categoria != null && categoria.isNotEmpty) body['categoria'] = categoria;
     if (frecuencia != null && frecuencia.isNotEmpty) body['frecuencia'] = frecuencia.toLowerCase();
@@ -206,6 +202,44 @@ Future<bool> editarRecurrenteApi({
     return false;
   } catch (e) {
     print("❌ Excepción en editarRecurrenteApi: $e");
+    return false;
+  }
+}
+
+Future<bool> deleteRecurrenteApi({required int recurrenteId}) async {
+  try {
+    final String? token = await _storage.read(key: 'jwt_token');
+
+    if (token == null) {
+      print("Error: No existe token en el storage.");
+      return false;
+    }
+
+    final url = Uri.parse('${Global.baseUrl}cartera-recurrentes/$recurrenteId');
+
+    final response = await http.delete(
+      url,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+        'ngrok-skip-browser-warning': 'true',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final decodedData = json.decode(response.body);
+
+      if (decodedData['status'] == 'success') {
+        // Refrescamos la lista de metas para actualizar la interfaz
+        await getRecurrentesApi();
+        return true;
+      }
+    } else {
+      print("Error al eliminar recurrente: ${response.body}");
+    }
+    return false;
+  } catch (e) {
+    print("Error de conexión al servidor en deleteRecurrenteApi: $e");
     return false;
   }
 }
