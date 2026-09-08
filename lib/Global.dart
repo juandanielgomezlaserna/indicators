@@ -14,14 +14,14 @@ class Global{
   static String baseUrl = "https://indicators-api-dgij.onrender.com/api/v1/";
 
   static Map<String, IconData> iconsIndicators = {
-    // Salud y fitness
-    'Pesas': Icons.fitness_center_outlined,
-    'Correr': Icons.directions_run_outlined,
-    'Ritmo cardíaco': Icons.monitor_heart_outlined,
-    'Spa': Icons.spa_outlined,
-    'Descanso': Icons.nightlight_outlined,
-    'Nutrición': Icons.restaurant_outlined,
-    'Hidratación': Icons.water_drop_outlined,
+  // Salud y fitness
+  'Pesas': Icons.fitness_center_outlined,
+  'Correr': Icons.directions_run_outlined,
+  'Ritmo cardíaco': Icons.monitor_heart_outlined,
+  'Spa': Icons.spa_outlined,
+  'Descanso': Icons.nightlight_outlined,
+  'Nutrición': Icons.restaurant_outlined,
+  'Hidratación': Icons.water_drop_outlined,
   // Espiritualidad y mente
   'Meditación': Icons.self_improvement_outlined,
   'Amanecer': Icons.brightness_5_outlined,

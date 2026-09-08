@@ -32,116 +32,165 @@ class _HomewishState extends State<Homewish> {
           children: [
             Row(
               children: [
-                SizedBox(width: 10,),
+                const SizedBox(width: 10),
                 Text(
                   "lista de deseos",
                   style: GoogleFonts.inter(fontSize: 30, fontWeight: FontWeight.w600, color: Global.title, letterSpacing: -1.5),
                 ),
               ],
             ),
-            SizedBox(height: 10,),
-            LayoutBuilder(
-              builder: (context, constraints) {
-                // Calculamos el ancho disponible de la pantalla o contenedor
-                double screenWidth = constraints.maxWidth;
-                int crossAxisCount = screenWidth > 600 ? 4 : 2; // 4 columnas en tablet/escritorio, 2 en celular
+            const SizedBox(height: 20),
 
-                // Ancho individual de cada tarjeta restando los espacios (spacing)
-                double spacing = 15.0;
-                double totalSpacing = spacing * (crossAxisCount - 1);
-                double itemWidth = (screenWidth - totalSpacing) / crossAxisCount;
+            // Obx escuchando los cambios en la lista reactiva
+            Obx(() {
+              final indicadores = controller.IndicatorsWishes;
 
-                // Altura fija exacta en píxeles para cada tarjeta de deseos (160 píxeles como tenías)
-                double fixedItemHeight = 160.0;
-                double calculatedAspectRatio = itemWidth / fixedItemHeight;
-
-                return Obx(() => GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: controller.IndicatorsWishes.length,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: crossAxisCount,       // Columnas inteligentes según el ancho
-                    mainAxisSpacing: spacing,             // Espacio vertical entre filas
-                    crossAxisSpacing: spacing,            // Espacio horizontal entre columnas
-                    childAspectRatio: calculatedAspectRatio, // Mantiene la altura fija de forma perfecta
+              if (indicadores.isEmpty) {
+                return const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40.0),
+                    child: Text("No hay indicadores disponibles", style: TextStyle(color: Colors.grey)),
                   ),
-                  itemBuilder: (context, index) {
-                    final indicator = controller.IndicatorsWishes[index];
+                );
+              }
 
-                    // Extraemos las variables del mapa JSON de forma segura
-                    final String nombre = indicator['nombre'] ?? 'Sin nombre';
-                    final int totalDeseos = indicator['total_deseos'] ?? 0;
-                    final String tipo = indicator['tipo'] ?? '';
+              // Separar los indicadores en dos grupos según total_deseos
+              final conDeseos = indicadores.where((ind) => (ind['total_deseos'] ?? 0) > 0).toList();
+              final sinDeseos = indicadores.where((ind) => (ind['total_deseos'] ?? 0) == 0).toList();
 
-                    return Card(
-                      color: Global.card,
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      // ClipRRect asegura que el efecto visual del click (splash) respete los bordes redondeados
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: InkWell(
-                          onTap: () async {
-                            await getWishesByIndicator(indicator["id"]);
-                            Get.to(() => Viewwishesbyindicator());
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.all(12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                // Icono dinámico o visual según el tipo de indicador
-                                Icon(
-                                  tipo == 'porcentaje' ? CupertinoIcons.percent : CupertinoIcons.star_fill,
-                                  color: Global.action,
-                                  size: 28,
-                                ),
-                                const SizedBox(height: 10),
-                                // Nombre del indicador
-                                Text(
-                                  nombre,
-                                  textAlign: TextAlign.center,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: GoogleFonts.inter(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                    color: Global.text,
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                // Conteo de deseos acumulados (desde tu query SQL COUNT)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: Global.action,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Text(
-                                    "$totalDeseos futuros",
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ));
-              },
-            ),
-            SizedBox(height: 90,),
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // SECCIÓN 1: Con Deseos
+                  if (conDeseos.isNotEmpty) ...[
+                    Text(
+                      "Activos con Deseos",
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Global.title),
+                    ),
+                    const SizedBox(height: 12),
+                    _construirGrid(conDeseos),
+                    const SizedBox(height: 30),
+                  ],
+
+                  // SECCIÓN 2: Sin Deseos
+                  if (sinDeseos.isNotEmpty) ...[
+                    Text(
+                      "Sin Deseos Registrados",
+                      style: GoogleFonts.inter(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey),
+                    ),
+                    const SizedBox(height: 12),
+                    _construirGrid(sinDeseos, esInactivo: true),
+                  ],
+                ],
+              );
+            }),
+
+            const SizedBox(height: 90),
           ],
         ),
       ),
+    );
+  }
+
+  // Widget reutilizable para pintar las cuadrículas (Grids)
+  Widget _construirGrid(List<dynamic> listaIndicadores, {bool esInactivo = false}) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        double screenWidth = constraints.maxWidth;
+        int crossAxisCount = screenWidth > 600 ? 4 : 2;
+
+        double spacing = 15.0;
+        double totalSpacing = spacing * (crossAxisCount - 1);
+        double itemWidth = (screenWidth - totalSpacing) / crossAxisCount;
+
+        double fixedItemHeight = 160.0;
+        double calculatedAspectRatio = itemWidth / fixedItemHeight;
+
+        return GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: listaIndicadores.length,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
+            mainAxisSpacing: spacing,
+            crossAxisSpacing: spacing,
+            childAspectRatio: calculatedAspectRatio,
+          ),
+          itemBuilder: (context, index) {
+            final indicator = listaIndicadores[index];
+
+            final String nombre = indicator['nombre'] ?? 'Sin nombre';
+            final int totalDeseos = indicator['total_deseos'] ?? 0;
+            final String iconoStr = indicator['icono'] ?? '';
+
+            // Busca el IconData directamente en el mapa Global.iconsIndicators
+            // Si no lo encuentra, usa uno por defecto (ej. CupertinoIcons.flag_fill)
+            final IconData iconoMostrado = Global.iconsIndicators[iconoStr] ?? CupertinoIcons.flag_fill;
+
+            return Card(
+              color: esInactivo ? Global.card.withOpacity(0.6) : Global.card,
+              elevation: esInactivo ? 1 : 4,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: () async {
+                    await getWishesByIndicator(indicator["id"]);
+                    Get.to(() => Viewwishesbyindicator());
+                  },
+                  child: Padding(
+                    padding: const EdgeInsets.all(12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Icono obtenido desde Global.iconsIndicators
+                        Icon(
+                          iconoMostrado,
+                          color: esInactivo ? Colors.grey : Global.action,
+                          size: 28,
+                        ),
+                        const SizedBox(height: 10),
+                        // Nombre del indicador
+                        Text(
+                          nombre,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.inter(
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15,
+                            color: esInactivo ? Colors.grey[400] : Global.text,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        // Conteo de deseos acumulados
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: esInactivo ? Colors.grey.withOpacity(0.2) : Global.action,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            "$totalDeseos futuros",
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                              color: esInactivo ? Colors.grey : Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }
