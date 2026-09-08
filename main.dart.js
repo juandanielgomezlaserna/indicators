@@ -104038,15 +104038,16 @@ if(p)o=g
 else{o=$.ad()
 o=new A.P7(A.Z(B.d.au(76.5),o.n()>>>16&255,o.n()>>>8&255,o.n()&255),16,g)}n=p?$.bc():B.t
 m=A.as(16)
-l=A.cb(q,$.ar(),g,24)
-k=A.W(d,1,B.as,g,A.eE().$3$color$fontSize$fontWeight($.ad(),14,B.aI),g,g,g)
+l=$.ar()
+k=A.cb(q,l,g,24)
+l=A.W(d,1,B.as,g,A.eE().$3$color$fontSize$fontWeight(l,18,B.aI),g,g,g)
 j=p?A.k(s)+" ideas guardadas":"agregar ideas"
 i=$.ad()
 h=t.p
-i=A.ev(A.bs(A.b([k,B.hz,A.W(j,1,B.as,g,A.eE().$3$color$fontSize$fontWeight(A.Z(B.d.au(127.5),i.n()>>>16&255,i.n()>>>8&255,i.n()&255),11,B.x),g,g,g)],h),B.H,B.cb,B.p),1)
-k=p?B.mi:B.JO
+i=A.ev(A.bs(A.b([l,B.hz,A.W(j,1,B.as,g,A.eE().$3$color$fontSize$fontWeight(A.Z(B.d.au(127.5),i.n()>>>16&255,i.n()>>>8&255,i.n()&255),11,B.x),g,g,g)],h),B.H,B.cb,B.p),1)
+l=p?B.mi:B.JO
 j=$.ad()
-return A.eM(!1,e,!0,A.iL(A.cf(g,A.bL(A.b([l,B.nw,i,B.Ch,A.cb(k,A.Z(102,j.n()>>>16&255,j.n()>>>8&255,j.n()&255),g,16)],h),B.u,B.q,B.p,0,g),B.r,g,g,new A.ck(n,g,g,m,g,g,B.X),g,g,g,g,B.Jg,g,g,g),g,g,o,B.P),g,!0,g,g,g,g,g,g,g,g,g,new A.azz(f),g,g,g,g,g,g,g)},
+return A.eM(!1,e,!0,A.iL(A.cf(g,A.bL(A.b([k,B.nw,i,B.Ch,A.cb(l,A.Z(102,j.n()>>>16&255,j.n()>>>8&255,j.n()&255),g,16)],h),B.u,B.q,B.p,0,g),B.r,g,g,new A.ck(n,g,g,m,g,g,B.X),g,g,g,g,B.Jg,g,g,g),g,g,o,B.P),g,!0,g,g,g,g,g,g,g,g,g,new A.azz(f),g,g,g,g,g,g,g)},
 $S:633}
 A.azz.prototype={
 $0(){var s=0,r=A.v(t.H),q=this
