@@ -123,8 +123,8 @@ class _HomewishState extends State<Homewish> {
                                         overflow: TextOverflow.ellipsis,
                                         style: GoogleFonts.inter(
                                           fontWeight: FontWeight.w600,
-                                          fontSize: 14,
-                                          color: Global.text,
+                                          fontSize: 18,
+                                          color: Global.action,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
