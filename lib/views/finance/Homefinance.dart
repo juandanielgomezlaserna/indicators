@@ -444,12 +444,14 @@ class _HomefinanceState extends State<Homefinance> {
                     final String acreedor = deuda['acreedor'] ?? 'Desconocido';
                     final double montoInicial = double.tryParse(deuda['monto_inicial']?.toString() ?? '0') ?? 0.0;
                     final double montoPendiente = double.tryParse(deuda['monto_pendiente']?.toString() ?? '0') ?? 0.0;
+                    final int bolsilloId = int.tryParse(deuda['bolsillo_id']?.toString() ?? '0') ?? 0;
 
                     return _buildDeudaCard(
                       id: id,
                       acreedor: acreedor,
                       montoInicial: montoInicial,
                       montoPendiente: montoPendiente,
+                      idBolsillo: bolsilloId
                     );
                   },
                 );
@@ -766,6 +768,7 @@ class _HomefinanceState extends State<Homefinance> {
     required String acreedor,
     required double montoInicial,
     required double montoPendiente,
+    required int idBolsillo,
   }) {
     // Cálculo de porcentaje pagado
     final double pagado = montoInicial - montoPendiente;
@@ -773,7 +776,7 @@ class _HomefinanceState extends State<Homefinance> {
 
     return InkWell(
       onTap: (){
-        editarDeudaModal(context, deudaId: id, acreedorActual: acreedor, montoInicialActual: montoInicial, montoPendienteActual: montoPendiente);
+        editarDeudaModal(context, deudaId: id, acreedorActual: acreedor, montoInicialActual: montoInicial, montoPendienteActual: montoPendiente, bolsilloIdActual: idBolsillo);
       },
       borderRadius: BorderRadius.circular(10),
       child: Container(
@@ -802,7 +805,7 @@ class _HomefinanceState extends State<Homefinance> {
                     ),
                     InkWell(
                       onTap: () {
-                        abonarDeudaModal(context, deudaId: id, acreedor: acreedor, montoPendiente: montoPendiente);
+                        abonarDeudaModal(context, deudaId: id, acreedor: acreedor, montoPendiente: montoPendiente, idBolsillo: idBolsillo);
                       },
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

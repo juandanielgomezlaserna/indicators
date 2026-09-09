@@ -11,7 +11,7 @@ void editarDeudaModal(
       required double montoInicialActual,
       required double montoPendienteActual,
       String tipoActual = 'cobrar',
-      int? bolsilloIdActual,
+      required int bolsilloIdActual,
     }) {
   final acreedorController = TextEditingController(text: acreedorActual);
   final montoInicialController = TextEditingController(

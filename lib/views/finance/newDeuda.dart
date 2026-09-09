@@ -137,10 +137,10 @@ void newDeudaModal(BuildContext context) {
 }
 
 /// Modal para realizar un abono a la deuda
-void abonarDeudaModal(BuildContext context, {required int deudaId, required String acreedor, required double montoPendiente}) {
+void abonarDeudaModal(BuildContext context, {required int deudaId, required String acreedor, required double montoPendiente, required int idBolsillo}) {
   final montoController = TextEditingController();
   int? bolsilloSeleccionado = controller.bolsillos.isNotEmpty
-      ? int.tryParse(controller.bolsillos.first['id']?.toString() ?? '')
+      ? int.tryParse(idBolsillo?.toString() ?? '0')
       : null;
 
   showModalBottomSheet(
