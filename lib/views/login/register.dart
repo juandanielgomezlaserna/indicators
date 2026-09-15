@@ -18,6 +18,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authService = AuthService();
+  final _codigoController = TextEditingController();
 
   bool _isLoading = false;
   bool _obscurePassword = true;
@@ -34,6 +35,7 @@ class _RegisterPageState extends State<RegisterPage> {
         usuario: _usuarioController.text.trim(),
         email: _emailController.text.trim(),
         password: _passwordController.text,
+        codigoAcceso: _codigoController.text.trim(), // 👈 Enviamos el valor
       );
 
       if (success && mounted) {
@@ -68,6 +70,7 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _codigoController.dispose();
     super.dispose();
   }
 
@@ -114,6 +117,29 @@ class _RegisterPageState extends State<RegisterPage> {
                   style: TextStyle(color: Colors.grey),
                 ),
                 const SizedBox(height: 24),
+
+                TextFormField(
+                  controller: _codigoController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    labelText: 'Código de Invitación',
+                    labelStyle: const TextStyle(color: Colors.grey),
+                    prefixIcon: const Icon(Icons.key, color: Color(0xFF4EE1A0)),
+                    filled: true,
+                    fillColor: const Color(0xFF161B22),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.trim().isEmpty) {
+                      return 'Por favor ingresa tu código de invitación';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 14),
 
                 // 1. Campo Nombre Completo
                 TextFormField(

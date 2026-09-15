@@ -6,6 +6,7 @@ import 'package:indicator/Global.dart';
 import 'package:indicator/main.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
+import 'package:indicator/models/ritualCierreApi.dart';
 
 class Homeprincipal extends StatefulWidget {
   const Homeprincipal({super.key});
@@ -15,6 +16,12 @@ class Homeprincipal extends StatefulWidget {
 }
 
 class _HomeprincipalState extends State<Homeprincipal> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Obx(() => Scaffold(

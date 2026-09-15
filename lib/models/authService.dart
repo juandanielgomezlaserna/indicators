@@ -45,6 +45,7 @@ class AuthService {
     required String usuario,
     required String email,
     required String password,
+    required String codigoAcceso, // 👈 Nuevo parámetro obligatorio
   }) async {
     final url = Uri.parse('$baseUrl/auth/register');
 
@@ -56,6 +57,7 @@ class AuthService {
         'usuario': usuario,
         'email': email,
         'password': password,
+        'codigo_acceso': codigoAcceso, // 👈 Se envía al backend
       }),
     );
 
@@ -68,7 +70,6 @@ class AuthService {
           await _storage.write(key: 'jwt_token', value: token);
         }
 
-        // 🚀 Guardar usuario en el Map de GetX
         if (responseData['data']['usuario'] != null) {
           controller.setUser(Map<String, dynamic>.from(responseData['data']['usuario']));
         }

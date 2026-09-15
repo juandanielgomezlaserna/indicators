@@ -13,6 +13,9 @@ void newDeudaModal(BuildContext context) {
       ? int.tryParse(controller.bolsillos.first['id']?.toString() ?? '')
       : null;
 
+  // 👈 Declarar isSaving aquí para que persista al hacer setState
+  bool isSaving = false;
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -41,6 +44,7 @@ void newDeudaModal(BuildContext context) {
                 const SizedBox(height: 15),
                 TextField(
                   controller: acreedorController,
+                  enabled: !isSaving, // Desactiva inputs mientras guarda
                   style: TextStyle(color: Global.text),
                   decoration: InputDecoration(
                     labelText: "Acreedor / Deudor",
@@ -53,6 +57,7 @@ void newDeudaModal(BuildContext context) {
                 TextField(
                   controller: montoController,
                   keyboardType: TextInputType.number,
+                  enabled: !isSaving,
                   style: TextStyle(color: Global.text),
                   decoration: InputDecoration(
                     labelText: "Monto Inicial",
@@ -76,7 +81,7 @@ void newDeudaModal(BuildContext context) {
                     DropdownMenuItem(value: 'pagar', child: Text("Por Pagar (Debo)")),
                     DropdownMenuItem(value: 'no_obligatoria', child: Text("No Obligatoria")),
                   ],
-                  onChanged: (val) {
+                  onChanged: isSaving ? null : (val) {
                     if (val != null) setState(() => tipoSeleccionado = val);
                   },
                 ),
@@ -97,7 +102,7 @@ void newDeudaModal(BuildContext context) {
                       child: Text("${b['nombre']} (\$${b['balance']})"),
                     );
                   }).toList(),
-                  onChanged: (val) => setState(() => bolsilloSeleccionado = val),
+                  onChanged: isSaving ? null : (val) => setState(() => bolsilloSeleccionado = val),
                 ),
                 const SizedBox(height: 20),
                 SizedBox(
@@ -108,23 +113,44 @@ void newDeudaModal(BuildContext context) {
                       backgroundColor: Global.action,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     ),
-                    onPressed: () async {
+                    onPressed: isSaving
+                        ? null
+                        : () async {
                       final acreedor = acreedorController.text.trim();
                       final monto = double.tryParse(montoController.text) ?? 0;
 
                       if (acreedor.isNotEmpty && monto > 0) {
+                        setState(() => isSaving = true); // Ahora sí actualiza el estado correctamente
+
                         final ok = await createDeudaApi(
                           acreedor: acreedor,
                           montoInicial: monto,
                           tipo: tipoSeleccionado,
                           bolsilloId: bolsilloSeleccionado,
                         );
-                        if (ok && context.mounted) {
-                          Navigator.pop(context);
+
+                        if (context.mounted) {
+                          if (ok) {
+                            Navigator.pop(context);
+                          } else {
+                            setState(() => isSaving = false);
+                          }
                         }
                       }
                     },
-                    child: const Text("Guardar Deuda", style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                    child: isSaving
+                        ? const SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                        strokeWidth: 2.5,
+                      ),
+                    )
+                        : const Text(
+                      "Guardar Deuda",
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    ),
                   ),
                 )
               ],

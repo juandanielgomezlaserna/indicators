@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import 'package:indicator/models/authService.dart';
 import 'package:indicator/models/indicatorsApi.dart';
 import 'package:indicator/models/logrosApi.dart';
+import 'package:indicator/models/ritualCierreApi.dart';
 import 'package:indicator/models/wishApi.dart';
 import 'package:indicator/views/HomePrincipal.dart';
 import 'package:indicator/views/finance/Homefinance.dart';
@@ -206,5 +207,6 @@ class MyController extends GetxController{
     super.onInit();
     //await setSplash();
     setPage("home");
+    final result = await getEstadoRitualCierreApi();
   }
 }
