@@ -208,5 +208,6 @@ class MyController extends GetxController{
     //await setSplash();
     setPage("home");
     final result = await getEstadoRitualCierreApi();
+    print(result);
   }
 }

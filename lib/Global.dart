@@ -11,7 +11,7 @@ class Global{
   static Color action = Color(0xFF9CD3D0);
   static Color title = Color(0xFF9CD3D0);
   static Color text = Color(0xFFCCCCCC);
-  static String baseUrl = "https://indicators-api-dgij.onrender.com/api/v1/";
+  static String baseUrl = "https://nyra.cloud/api/v1/";
 
   static Map<String, IconData> iconsIndicators = {
   // Salud y fitness

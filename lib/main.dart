@@ -7,7 +7,9 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:indicator/Global.dart';
 import 'package:indicator/controllers/MyController.dart';
 import 'package:indicator/models/authService.dart';
+import 'package:indicator/models/ritualCierreApi.dart';
 import 'package:indicator/views/HomePrincipal.dart';
+import 'package:indicator/views/cierreSemana/Ritualcierrescreen.dart';
 import 'package:indicator/views/login/login.dart'; // O la ruta correcta de tu home principal
 
 void main() async {
@@ -69,7 +71,25 @@ class _SplashState extends State<Splash> {
       bool isAuthenticated = await authService.checkAuth();
 
       if (isAuthenticated) {
-        // Redirige al Home Principal eliminando el Splash del historial
+        // 💡 AQUÍ VALIDAMOS EL RITUAL DE CIERRE SEMANAL
+        try {
+          final result = await getEstadoRitualCierreApi();
+          print('Estado Ritual: $result');
+
+          final bool debeIniciar = result != null &&
+              (result['debe_iniciar'] == true);
+
+          if (debeIniciar) {
+            // Si debe hacer el ritual, lo redirigimos directamente a la pantalla del ritual
+            Get.offAll(() => const RitualCierreScreen());
+            return;
+          }
+        } catch (e) {
+          print('Error al verificar el estado del ritual en Splash: $e');
+          // Si ocurre un error verificando el ritual, continua normalmente hacia el Home
+        }
+
+        // Si no hay ritual pendiente, redirige al Home Principal
         Get.offAll(() => const Homeprincipal());
       } else {
         // Redirige al Login si no hay sesión válida

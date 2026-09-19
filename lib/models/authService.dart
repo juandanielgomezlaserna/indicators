@@ -6,7 +6,7 @@ import 'package:indicator/main.dart';
 import 'package:indicator/views/login/login.dart';
 
 class AuthService {
-  static const String baseUrl = 'https://indicators-api-dgij.onrender.com/api/v1';
+  static const String baseUrl = 'https://nyra.cloud/api/v1';
   final _storage = const FlutterSecureStorage();
 
   /// 1. LOGIN
